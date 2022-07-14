@@ -17,7 +17,7 @@ proportion = 0.7
 rho_X = np.sort(np.random.normal(mean, std, 100))
 component1 = (1 / np.sqrt(2*np.pi*s1**2)) * np.exp(-(rho_X-m1)**2 / (2*s1**2))
 component2 = (1 / np.sqrt(2*np.pi*s2**2)) * np.exp(-(rho_X-m2)**2 / (2*s2**2))
-rho_0_Y = proportion * component1 + (1-proportion) * component2
+rho_0_Y = (proportion * component1 + (1-proportion) * component2)
 #----------------------------------------------------------------------------------------------------------------------------------------
 
 def F_k(z):
@@ -86,7 +86,7 @@ def animate(i):
     ax.plot(steps[i%numSteps][0], steps[i%numSteps][1], color = 'b')
     ax.plot(mu_X, mu_Y, color = 'r')
     plt.xlim([-4,4])
-    plt.ylim([0,0.45])
+    plt.ylim([0,8])
 
 ani = animation.FuncAnimation(fig, animate, interval = 50, repeat = True)
 plt.show()
