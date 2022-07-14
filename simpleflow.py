@@ -21,17 +21,17 @@ rho_0_Y = (proportion * component1 + (1-proportion) * component2)
 #----------------------------------------------------------------------------------------------------------------------------------------
 
 def F_k(z):
-    r = abs(z - np.median(steps[len(steps)-1][1]))
+    r = abs(z - np.median(steps[len(steps)-1][axis]))
     alpha = 0.5 # Not sure how to choose this value
-    return r * math.erf(r/alpha) + (alpha/math.sqrt(math.pi)) * math.exp(-(r/alpha) ** 2)  
+    return r * math.erf(r/alpha) + (alpha/math.sqrt(math.pi)) * math.exp(-(r/alpha) ** 2)
 
 def u_k(z, Beta):
     return (z ** 2 / 2) + Beta * F_k(z)
 
-def uConjugate_k(y, Beta, rho_Y):
+def uConjugate_k(y, Beta, rho):
     ConvexCandidate = []
-    for i in range(0, len(rho_Y)):
-        ConvexCandidate.append((rho_Y[i] * y) - u_k(rho_Y[i], Beta))
+    for i in range(0, len(rho)):
+        ConvexCandidate.append((rho[i] * y) - u_k(rho[i], Beta))
     return max(ConvexCandidate)
 
 def LLCalculation(Beta, rho, mu):
@@ -67,11 +67,17 @@ def SamplesUpdate(rho_k, Beta):
 
 steps = [(rho_X, rho_0_Y)]
 
-for i in range(0, 20):
-    rho_k_Y = steps[len(steps)-1][1]
-    Beta = BetaCalculation(rho_k_Y, mu_Y)
-    steps.append((rho_X, SamplesUpdate(rho_k_Y, Beta)))
-    LL = LLCalculation(Beta, rho_k_Y, mu_Y)
+for i in range(0, 50):
+    rho_k = steps[len(steps)-1]
+
+    axis = 0
+    Beta_X = BetaCalculation(rho_k[0], mu_X)
+    axis = 1
+    Beta = BetaCalculation(rho_k[1], mu_Y)
+
+    steps.append((SamplesUpdate(rho_k[0], Beta_X), SamplesUpdate(rho_k[1], Beta)))
+
+    LL = LLCalculation(Beta, rho_k[1], mu_Y) + LLCalculation(Beta, rho_k[0], mu_X)
     print(LL)
     
 
