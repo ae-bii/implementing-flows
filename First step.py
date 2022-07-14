@@ -28,7 +28,7 @@ def uConjugate(y, Beta):
     ConvexCandidate = []
     for i in range(0, len(MixtureSamples)):
         ConvexCandidate.append((MixtureSamples[i] * y) - u(MixtureSamples[i], Beta))
-    return max(MixtureSamples)
+    return max(ConvexCandidate)
 
 def MixtureSampleGenerator():
     SubSamples1 = numpy.random.normal(0, 2, 100)
