@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import math
+import numdifftools
 
 random.seed(0)
 np.random.seed(0)
@@ -38,7 +39,6 @@ def uConjugate(y, Beta):
         ConvexCandidate.append(
             (MixtureSamples[i] * y) - u(MixtureSamples[i], Beta))
 
-        ConvexCandidate.append((MixtureSamples[i] * y) - u(MixtureSamples[i], Beta))
     return max(ConvexCandidate)
 
 
@@ -72,17 +72,19 @@ def LLCalculation(Beta):
 
 
 def SamplesUpdate(MixtureSamples):
-    NewMixtureSamples = np.gradient(MixtureSamples)
+    NewMixtureSamples = []
+    for i in range(0, len(MixtureSamples)):
+        NewMixtureSamples.append(MixtureSamples[i] + Beta * numdifftools.Gradient(F)([MixtureSamples[i]]))
+    NewMixtureSamples = np.array(NewMixtureSamples)
+
     return NewMixtureSamples
 
 
 StandardNormalSamples = np.random.standard_normal(100)
 MixtureSamples = MixtureSampleGenerator()
-Beta = BetaCalculation()
-LL = LLCalculation(Beta)
-print(LL)
+
 for i in range(0, 10):
-    MixtureSamples = SamplesUpdate(MixtureSamples)
     Beta = BetaCalculation()
+    MixtureSamples = SamplesUpdate(MixtureSamples)
     LL = LLCalculation(Beta)
     print(LL)
