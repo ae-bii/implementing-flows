@@ -86,7 +86,7 @@ def animate(i):
     ax.plot(steps[i%numSteps][0], steps[i%numSteps][1], color = 'b')
     ax.plot(mu_X, mu_Y, color = 'r')
     plt.xlim([-4,4])
-    plt.ylim([0,8])
+    plt.ylim([0,0.6])
 
 ani = animation.FuncAnimation(fig, animate, interval = 50, repeat = True)
 plt.show()
