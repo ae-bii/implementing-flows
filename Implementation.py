@@ -16,7 +16,7 @@ pi = math.pi
 
 def F(z):
     r = abs(z - RandomSample) # Random point in the cluster
-    alpha = 0.5  # Consistent with the density 
+    alpha = 1  # Consistent with the density 
     return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
 
 
