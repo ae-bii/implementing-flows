@@ -21,8 +21,8 @@ rho_0_Y = (proportion * component1 + (1-proportion) * component2)
 #----------------------------------------------------------------------------------------------------------------------------------------
 
 def F_k(z):
-    r = abs(z - np.median(steps[len(steps)-1][axis]))
-    alpha = 0.5 # Not sure how to choose this value
+    r = abs(z - np.median(steps[len(steps)-1][axis])) #RANDOM SAMPLE
+    alpha = 0.3 # Not sure how to choose this value
     return r * math.erf(r/alpha) + (alpha/math.sqrt(math.pi)) * math.exp(-(r/alpha) ** 2)
 
 def u_k(z, Beta):
@@ -67,17 +67,17 @@ def SamplesUpdate(rho_k, Beta):
 
 steps = [(rho_X, rho_0_Y)]
 
-for i in range(0, 50):
+for i in range(0, 20):
     rho_k = steps[len(steps)-1]
 
     axis = 0
     Beta_X = BetaCalculation(rho_k[0], mu_X)
     axis = 1
-    Beta = BetaCalculation(rho_k[1], mu_Y)
+    Beta_Y = BetaCalculation(rho_k[1], mu_Y)
 
-    steps.append((SamplesUpdate(rho_k[0], Beta_X), SamplesUpdate(rho_k[1], Beta)))
+    steps.append((SamplesUpdate(rho_k[0], Beta_X), SamplesUpdate(rho_k[1], Beta_Y)))
 
-    LL = LLCalculation(Beta, rho_k[1], mu_Y) + LLCalculation(Beta, rho_k[0], mu_X)
+    LL = LLCalculation(Beta_Y, rho_k[1], mu_Y) + LLCalculation(Beta_X, rho_k[0], mu_X)
     print(LL)
     
 
