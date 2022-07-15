@@ -2,6 +2,7 @@ import numpy as np
 import random
 import math
 import numdifftools
+import matplotlib.pyplot as plt
 
 random.seed(0)
 np.random.seed(0)
@@ -10,14 +11,17 @@ e = math.e
 pi = math.pi
 
 
+
+
+
 def F(z):
-    r = abs(z - np.median(MixtureSamples))
-    alpha = 0.5  # Not sure how to choose this value
+    r = abs(z - RandomSample) # Random point in the cluster
+    alpha = 0.5  # Consistent with the density 
     return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
 
 
 def BetaCalculation():  # Through gradient descent
-    Proportion = 1  # Not sure how to choose this value
+    Proportion = 0.5  # Not sure how to choose this value
     xSummationDerivative = 0
     ySummationDerivative = 0
     for i in range(0, len(MixtureSamples)):
@@ -44,7 +48,7 @@ def uConjugate(y, Beta):
 
 def MixtureSampleGenerator():
     SubSamples1 = np.random.normal(0, 2, 100)
-    SubSamples2 = np.random.normal(6, 2, 100)
+    SubSamples2 = np.random.normal(2, 2, 100)
     MixtureSamples = []
     for i in range(0, 100):
         RandomSelector = random.random()
@@ -83,8 +87,16 @@ def SamplesUpdate(MixtureSamples):
 StandardNormalSamples = np.random.standard_normal(100)
 MixtureSamples = MixtureSampleGenerator()
 
+
+
+plt.hist(MixtureSamples, bins=30)
+
+
 for i in range(0, 10):
+    RandomSample = MixtureSamples[random.randint(0,len(MixtureSamples) - 1)]
     Beta = BetaCalculation()
     MixtureSamples = SamplesUpdate(MixtureSamples)
     LL = LLCalculation(Beta)
     print(LL)
+plt.hist(MixtureSamples, bins=30)
+plt.show()
