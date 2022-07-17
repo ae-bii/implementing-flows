@@ -14,34 +14,51 @@ pi = math.pi
 
 
 
-def F(z):
+def F_1(z):
     r = abs(z - RandomSample) # Random point in the cluster
-    alpha = 1  # Consistent with the density 
+    alpha = 1.5 # Consistent with the density (As this gets larger, less samples are moved close to 0)
     return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
 
+def F_2(z):
+    r = abs(z - RandomSample)
+    alpha = 1.5
+    return alpha + r - alpha * math.log(abs(alpha + r))
 
-def BetaCalculation():  # Through gradient descent
-    Proportion = 0.5  # Not sure how to choose this value
+def Beta_1Calculation():  # Through gradient descent
+    Proportion = 0.5 # Not sure how to choose this value
     xSummationDerivative = 0
     ySummationDerivative = 0
     for i in range(0, len(MixtureSamples)):
-        xSummationDerivative += F(MixtureSamples[i])
+        xSummationDerivative += F_1(MixtureSamples[i])
     for j in range(0, len(StandardNormalSamples)):
-        ySummationDerivative += F(StandardNormalSamples[j])
-    Beta = (-1/len(MixtureSamples)) * xSummationDerivative + \
+        ySummationDerivative += F_1(StandardNormalSamples[j])
+    Beta_1 = (-1/len(MixtureSamples)) * xSummationDerivative + \
         (1/len(StandardNormalSamples)) * ySummationDerivative
-    return Beta * Proportion
+    return Beta_1 * Proportion
+
+def Beta_2Calculation():
+    Proportion = 0.5
+    xSummationDerivative = 0
+    ySummationDerivative = 0
+    for i in range(0, len(MixtureSamples)):
+        xSummationDerivative += F_2(MixtureSamples[i])
+    for j in range(0, len(StandardNormalSamples)):
+        ySummationDerivative += F_2(StandardNormalSamples[j])
+    Beta_2 = (-1/len(MixtureSamples)) * xSummationDerivative + \
+        (1/len(StandardNormalSamples)) * ySummationDerivative
+    return Beta_2 * Proportion
 
 
-def u(x, Beta):
-    return (x ** 2 / 2) + Beta * F(x)
+
+def u(x, Beta_1, Beta_2):
+    return (x ** 2 / 2) + Beta_1 * F_1(x) + Beta_2 * F_2(x)
 
 
-def uConjugate(y, Beta):
+def uConjugate(y, Beta_1, Beta_2):
     ConvexCandidate = []
     for i in range(0, len(MixtureSamples)):
         ConvexCandidate.append(
-            (MixtureSamples[i] * y) - u(MixtureSamples[i], Beta))
+            (MixtureSamples[i] * y) - u(MixtureSamples[i], Beta_1, Beta_2))
 
     return max(ConvexCandidate)
 
@@ -61,13 +78,13 @@ def MixtureSampleGenerator():
     return MixtureSamples
 
 
-def LLCalculation(Beta):
+def LLCalculation(Beta_1, Beta_2):
     xSummation = 0
     ySummation = 0
     for i in range(0, len(MixtureSamples)):
-        xSummation += u(MixtureSamples[i], Beta)
+        xSummation += u(MixtureSamples[i], Beta_1, Beta_2)
     for j in range(0, len(StandardNormalSamples)):
-        ySummation += uConjugate(StandardNormalSamples[j], Beta)
+        ySummation += uConjugate(StandardNormalSamples[j], Beta_1, Beta_2)
 
     LL = 1/len(MixtureSamples) * xSummation + 1 / \
         len(StandardNormalSamples) * ySummation
@@ -78,7 +95,7 @@ def LLCalculation(Beta):
 def SamplesUpdate(MixtureSamples):
     NewMixtureSamples = []
     for i in range(0, len(MixtureSamples)):
-        NewMixtureSamples.append(MixtureSamples[i] + Beta * numdifftools.Gradient(F)([MixtureSamples[i]]))
+        NewMixtureSamples.append(MixtureSamples[i] + Beta_1 * numdifftools.Gradient(F_1)([MixtureSamples[i]]) + Beta_2 * numdifftools.Gradient(F_2)([MixtureSamples[i]]))
     NewMixtureSamples = np.array(NewMixtureSamples)
 
     return NewMixtureSamples
@@ -89,14 +106,16 @@ MixtureSamples = MixtureSampleGenerator()
 
 
 
-plt.hist(MixtureSamples, bins=30)
+plt.hist(MixtureSamples, bins=15)
 
 
-for i in range(0, 10):
+for i in range(0, 20): # Maybe there is a problem of overfitting
     RandomSample = MixtureSamples[random.randint(0,len(MixtureSamples) - 1)]
-    Beta = BetaCalculation()
+    Beta_1 = Beta_1Calculation()
+    Beta_2 = Beta_2Calculation()
     MixtureSamples = SamplesUpdate(MixtureSamples)
-    LL = LLCalculation(Beta)
+    LL = LLCalculation(Beta_1, Beta_2)
     print(LL)
-plt.hist(MixtureSamples, bins=30)
+
+plt.hist(MixtureSamples, bins=15)
 plt.show()
