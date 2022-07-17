@@ -10,11 +10,7 @@ np.random.seed(0)
 e = math.e
 pi = math.pi
 
-
-
-
-
-def F_1(z):
+def F_1(z): 
     r = abs(z - RandomSample) # Random point in the cluster
     alpha = 1.5 # Consistent with the density (As this gets larger, less samples are moved close to 0)
     return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
@@ -119,3 +115,4 @@ for i in range(0, 20): # Maybe there is a problem of overfitting
 
 plt.hist(MixtureSamples, bins=15)
 plt.show()
+
