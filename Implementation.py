@@ -103,14 +103,17 @@ MixtureSamples = MixtureSampleGenerator()
 CenterGeneratorList = StandardNormalSamples + MixtureSamples
 
 steps = [MixtureSamples]
-
-for i in range(0, 20): # Maybe there is a problem of overfitting
+LL = 0
+while True: # Maybe there is a problem of overfitting
     RandomSample = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
     Beta_1 = Beta_1Calculation()
     Beta_2 = Beta_2Calculation()
     MixtureSamples = SamplesUpdate(MixtureSamples)
+    OldLL = LL
     LL = LLCalculation(Beta_1, Beta_2)
     print(LL)
+    if abs(LL - OldLL) < 0.001:
+        break
 
     steps.append(MixtureSamples)
 
