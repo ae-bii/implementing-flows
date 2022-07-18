@@ -104,7 +104,8 @@ CenterGeneratorList = StandardNormalSamples + MixtureSamples
 Iteration = 0 
 steps = [MixtureSamples]
 
-for i in range(0, 100): # Maybe there is a problem of overfitting
+LL = 0
+while True: # Maybe there is a problem of overfitting
     RandomSample = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
     if Iteration > 0:
         while abs(RandomSample - PreviousSample) < 0.05: # Make sure two centres are not too close
@@ -113,9 +114,12 @@ for i in range(0, 100): # Maybe there is a problem of overfitting
     Beta_1 = Beta_1Calculation()
     Beta_2 = Beta_2Calculation()
     MixtureSamples = SamplesUpdate(MixtureSamples)
+    OldLL = LL
     LL = LLCalculation(Beta_1, Beta_2)
     print(LL)
     Iteration += 1
+    if abs(LL - OldLL) < 0.001:
+        break
     steps.append(MixtureSamples)
 
 #----------------------------------------------------- GENERATE ANIMATION ---------------------------------------------------------------
