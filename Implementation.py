@@ -102,7 +102,7 @@ MixtureSamples = MixtureSampleGenerator()
 
 
 
-plt.hist(MixtureSamples, bins=15)
+plt.hist(StandardNormalSamples, bins=15, color='r', alpha=0.5)
 
 
 for i in range(0, 20): # Maybe there is a problem of overfitting
@@ -113,6 +113,6 @@ for i in range(0, 20): # Maybe there is a problem of overfitting
     LL = LLCalculation(Beta_1, Beta_2)
     print(LL)
 
-plt.hist(MixtureSamples, bins=15)
+plt.hist(MixtureSamples, bins=15, color='b', alpha=0.5)
 plt.show()
 
