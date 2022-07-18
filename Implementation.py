@@ -11,13 +11,19 @@ np.random.seed(0)
 e = math.e
 pi = math.pi
 
-def F_1(z): 
-    r = abs(z - RandomSample) # Random point in the cluster
+def F_1(z, Flag = 1): 
+    if Flag == 1:
+        r = abs(z - RandomMixtureSample) # Random point in the cluster
+    else:
+        r = abs(z - RandomNormalSample)
     alpha = 1.5 # Consistent with the density (As this gets larger, less samples are moved close to 0)
     return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
 
-def F_2(z):
-    r = abs(z - RandomSample)
+def F_2(z, Flag = 1):
+    if Flag == 1:
+        r = abs(z - RandomMixtureSample)
+    else:
+        r = abs(z - RandomNormalSample)
     alpha = 1.5
     return alpha + r - alpha * math.log(abs(alpha + r))
 
@@ -25,12 +31,10 @@ def Beta_1Calculation():  # Through gradient descent
     Proportion = 0.5 # Not sure how to choose this value
     xSummationDerivative = 0
     ySummationDerivative = 0
-    RandomSample = RandomNormalSample
     for j in range(0, len(StandardNormalSamples)):
-        ySummationDerivative += F_1(StandardNormalSamples[j])
-    RandomSample = RandomMixtureSample
+        ySummationDerivative += F_1(StandardNormalSamples[j], 2)
     for i in range(0, len(MixtureSamples)):
-        xSummationDerivative += F_1(MixtureSamples[i])
+        xSummationDerivative += F_1(MixtureSamples[i], 1)
     Beta_1 = (-1/len(MixtureSamples)) * xSummationDerivative + \
         (1/len(StandardNormalSamples)) * ySummationDerivative
     return Beta_1 * Proportion
@@ -39,12 +43,10 @@ def Beta_2Calculation():
     Proportion = 0.5
     xSummationDerivative = 0
     ySummationDerivative = 0
-    RandomSample = RandomNormalSample
     for j in range(0, len(StandardNormalSamples)):
-        ySummationDerivative += F_2(StandardNormalSamples[j])
-    RandomSample = RandomMixtureSample
+        ySummationDerivative += F_2(StandardNormalSamples[j], 2)
     for i in range(0, len(MixtureSamples)):
-        xSummationDerivative += F_2(MixtureSamples[i])
+        xSummationDerivative += F_2(MixtureSamples[i], 1)
     Beta_2 = (-1/len(MixtureSamples)) * xSummationDerivative + \
         (1/len(StandardNormalSamples)) * ySummationDerivative
     return Beta_2 * Proportion
@@ -52,7 +54,7 @@ def Beta_2Calculation():
 
 
 def u(x, Beta_1, Beta_2):
-    return (x ** 2 / 2) + Beta_1 * F_1(x) + Beta_2 * F_2(x)
+    return (x ** 2 / 2) + Beta_1 * F_1(x, 1) + Beta_2 * F_2(x, 1)
 
 
 def uConjugate(y, Beta_1, Beta_2):
@@ -96,7 +98,7 @@ def LLCalculation(Beta_1, Beta_2):
 def SamplesUpdate(MixtureSamples):
     NewMixtureSamples = []
     for i in range(0, len(MixtureSamples)):
-        NewMixtureSamples.append(MixtureSamples[i] + Beta_1 * numdifftools.Gradient(F_1)([MixtureSamples[i]]) + Beta_2 * numdifftools.Gradient(F_2)([MixtureSamples[i]]))
+        NewMixtureSamples.append(MixtureSamples[i] + Beta_1 * numdifftools.Gradient(F_1)([MixtureSamples[i]]) + Beta_2 * numdifftools.Gradient(F_1)([MixtureSamples[i]]))
     NewMixtureSamples = np.array(NewMixtureSamples)
 
     return NewMixtureSamples
@@ -111,7 +113,6 @@ steps = [MixtureSamples]
 for i in range(0, 20): # Maybe there is a problem of overfitting
     RandomMixtureSample = MixtureSamples[random.randint(0,len(MixtureSamples) - 1)]
     RandomNormalSample = StandardNormalSamples[random.randint(0,len(StandardNormalSamples) - 1)]
-    RandomSample = RandomMixtureSample
     Beta_1 = Beta_1Calculation()
     Beta_2 = Beta_2Calculation()
     MixtureSamples = SamplesUpdate(MixtureSamples)
