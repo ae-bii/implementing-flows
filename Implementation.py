@@ -118,7 +118,7 @@ while True: # Maybe there is a problem of overfitting
     LL = LLCalculation(Beta_1, Beta_2)
     print(LL)
     Iteration += 1
-    if abs(LL - OldLL) < 0.001:
+    if abs(LL - OldLL) < 0.0001 or Iteration > 100:
         break
     steps.append(MixtureSamples)
 
