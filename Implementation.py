@@ -108,7 +108,7 @@ MixtureSamples = MixtureSampleGenerator()
 
 steps = [MixtureSamples]
 
-for i in range(0, 20): # Maybe there is a problem of overfitting
+for i in range(0, 50): # Maybe there is a problem of overfitting
     RandomMixtureSample = MixtureSamples[random.randint(0,len(MixtureSamples) - 1)]
     RandomNormalSample = StandardNormalSamples[random.randint(0,len(StandardNormalSamples) - 1)]
     RandomSample = RandomMixtureSample
@@ -127,7 +127,7 @@ ax = fig.add_subplot(1,1,1)
 def animate(i):
     ax.clear()
     ax.hist(StandardNormalSamples, bins=15, color='r', alpha=0.5)
-    ax.hist(steps[i], bins=15, color='b', alpha=0.5)
+    ax.hist(steps[i], bins=20, color='b', alpha=0.5)
     plt.xlim([-5,5])
     plt.ylim([0,25])
 
