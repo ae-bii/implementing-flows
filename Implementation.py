@@ -24,10 +24,12 @@ def Beta_1Calculation():  # Through gradient descent
     Proportion = 0.5 # Not sure how to choose this value
     xSummationDerivative = 0
     ySummationDerivative = 0
-    for i in range(0, len(MixtureSamples)):
-        xSummationDerivative += F_1(MixtureSamples[i])
+    RandomSample = RandomNormalSample
     for j in range(0, len(StandardNormalSamples)):
         ySummationDerivative += F_1(StandardNormalSamples[j])
+    RandomSample = RandomMixtureSample
+    for i in range(0, len(MixtureSamples)):
+        xSummationDerivative += F_1(MixtureSamples[i])
     Beta_1 = (-1/len(MixtureSamples)) * xSummationDerivative + \
         (1/len(StandardNormalSamples)) * ySummationDerivative
     return Beta_1 * Proportion
@@ -36,10 +38,12 @@ def Beta_2Calculation():
     Proportion = 0.5
     xSummationDerivative = 0
     ySummationDerivative = 0
-    for i in range(0, len(MixtureSamples)):
-        xSummationDerivative += F_2(MixtureSamples[i])
+    RandomSample = RandomNormalSample
     for j in range(0, len(StandardNormalSamples)):
         ySummationDerivative += F_2(StandardNormalSamples[j])
+    RandomSample = RandomMixtureSample
+    for i in range(0, len(MixtureSamples)):
+        xSummationDerivative += F_2(MixtureSamples[i])
     Beta_2 = (-1/len(MixtureSamples)) * xSummationDerivative + \
         (1/len(StandardNormalSamples)) * ySummationDerivative
     return Beta_2 * Proportion
@@ -106,7 +110,9 @@ plt.hist(StandardNormalSamples, bins=15, color='r', alpha=0.5)
 
 
 for i in range(0, 20): # Maybe there is a problem of overfitting
-    RandomSample = MixtureSamples[random.randint(0,len(MixtureSamples) - 1)]
+    RandomMixtureSample = MixtureSamples[random.randint(0,len(MixtureSamples) - 1)]
+    RandomNormalSample = StandardNormalSamples[random.randint(0,len(StandardNormalSamples) - 1)]
+    RandomSample = RandomMixtureSample
     Beta_1 = Beta_1Calculation()
     Beta_2 = Beta_2Calculation()
     MixtureSamples = SamplesUpdate(MixtureSamples)
