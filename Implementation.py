@@ -3,6 +3,7 @@ import random
 import math
 import numdifftools
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 random.seed(0)
 np.random.seed(0)
@@ -105,9 +106,7 @@ StandardNormalSamples = np.random.standard_normal(100)
 MixtureSamples = MixtureSampleGenerator()
 
 
-
-plt.hist(StandardNormalSamples, bins=15, color='r', alpha=0.5)
-
+steps = [MixtureSamples]
 
 for i in range(0, 20): # Maybe there is a problem of overfitting
     RandomMixtureSample = MixtureSamples[random.randint(0,len(MixtureSamples) - 1)]
@@ -119,6 +118,20 @@ for i in range(0, 20): # Maybe there is a problem of overfitting
     LL = LLCalculation(Beta_1, Beta_2)
     print(LL)
 
-plt.hist(MixtureSamples, bins=15, color='b', alpha=0.5)
-plt.show()
+    steps.append(MixtureSamples)
 
+#----------------------------------------------------- GENERATE ANIMATION ---------------------------------------------------------------
+fig = plt.figure()
+ax = fig.add_subplot(1,1,1)
+
+def animate(i):
+    ax.clear()
+    ax.hist(StandardNormalSamples, bins=15, color='r', alpha=0.5)
+    ax.hist(steps[i], bins=15, color='b', alpha=0.5)
+    plt.xlim([-5,5])
+    plt.ylim([0,25])
+
+ani = animation.FuncAnimation(fig, animate, interval = 150, repeat = True, frames = len(steps), repeat_delay = 500000)
+plt.show()
+plt.close()
+#----------------------------------------------------------------------------------------------------------------------------------------
