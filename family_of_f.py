@@ -4,6 +4,7 @@ import numpy as np
 e = math.e
 pi = math.pi
 
+# TODO: Implement in a way so that functions can be used in higher dimensions too
 class Potentialf:
     # Find differentiated version of bump_F
     def bump_f(z, center):
