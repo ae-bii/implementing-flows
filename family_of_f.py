@@ -59,20 +59,21 @@ class PotentialF:
         alpha = 1.5  # Consistent with the density 
         return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
     
-    def gaussian_F(z, z_center):
+    def gaussian_F(z, z_center, alpha, constant):
+        r = abs(z - z_center)
+        return -math.pow(e, -alpha**2 * r**2) / (2 * alpha**2) + constant
+    
+    def multiquadric_F(z, z_center, alpha, constant):
         return
     
-    def multiquadric_F(z, z_center):
+    def inverseQuadratic_F(z, z_center, alpha, constant):
         return
     
-    def inverseQuadratic_F(z, z_center):
+    def inverseMultiquadric_F(z, z_center, alpha, constant):
         return
     
-    def inverseMultiquadric_F(z, z_center):
+    def polyharmonicSpline_F(z, z_center, constant, k):
         return
     
-    def polyharmonicSpline_F(z, z_center, k):
-        return
-    
-    def thinPlateSpline_F(z, z_center):
+    def thinPlateSpline_F(z, z_center, constant):
         return
