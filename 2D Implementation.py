@@ -46,8 +46,8 @@ def BetaCalculation():
     return np.multiply(Beta, Proportion)
 
 def u(x, Beta):
-    xval = (x[0] ** 2 / 2) + Beta[0] * F(x)[0] + Beta[0] * F(x)[0]
-    yval = (x[1] ** 2 / 2) + Beta[1] * F(x)[1] + Beta[0] * F(x)[1]
+    xval = (x[0] ** 2 / 2) + Beta[0] * F(x)[0]
+    yval = (x[1] ** 2 / 2) + Beta[1] * F(x)[1]
     return (xval, yval)
 
 def uConjugate(y, Beta):
@@ -97,7 +97,7 @@ def StandardNormalGenerator():
     return Sample
 
 
-#--------------------------------------------------------------------- TESTING ------------------------------------------------------------------
+#------------------------------------------------------------------ TESTING (change to heatmap, add animtation)------------------------------------------------------------
 MixtureSample = MixtureSampleGenerator()
 StandardNormal = StandardNormalGenerator()
 
