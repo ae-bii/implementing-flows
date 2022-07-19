@@ -65,17 +65,17 @@ def uConjugate(y, Beta):
 def SamplesUpdate(OldMixtureSample):
     NewMixtureSample = []
     for i in range(0, len(OldMixtureSample)):
-        xval = OldMixtureSample[i][0] + Beta[0] * numdifftools.Gradient(F_1)([OldMixtureSample[i][0]]) + Beta[0] * numdifftools.Gradient(F_1)([OldMixtureSample[i][0]])
-        yval = OldMixtureSample[i][1] + Beta[1] * numdifftools.Gradient(F_2)([OldMixtureSample[i][1]]) + Beta[1] * numdifftools.Gradient(F_2)([OldMixtureSample[i][1]])
+        xval = OldMixtureSample[i][0] + Beta[0] * numdifftools.Gradient(F_1)([OldMixtureSample[i][0]])
+        yval = OldMixtureSample[i][1] + Beta[1] * numdifftools.Gradient(F_2)([OldMixtureSample[i][1]])
         NewMixtureSample.append([xval, yval])
     NewMixtureSample = np.array(NewMixtureSample)
     return NewMixtureSample
 
 def MixtureSampleGenerator():
     mean1 = [1, -1]
-    cov1 = [[1, 0], [0, 1]]
+    cov1 = [[0.5, 0], [0, 0.5]]
     mean2 = [-1, 1]
-    cov2 = [[1, 0], [0, 1]]
+    cov2 = [[0.5, 0], [0, 0.5]]
     x = np.random.multivariate_normal(mean1, cov1, 100)
     y = np.random.multivariate_normal(mean2, cov2, 100)
     MixtureSample = []
@@ -110,6 +110,7 @@ plt.subplot(1,2,2)
 plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
 
 for i in range(50): # Maybe there is a problem of overfitting
+    print("Iteration " + str(i))
     center = StandardNormal[random.randint(0, len(StandardNormal) - 1)]
     Beta = BetaCalculation()
     MixtureSample = SamplesUpdate(MixtureSample)
