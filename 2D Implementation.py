@@ -52,13 +52,13 @@ def u(x, Beta):
 
 def uConjugate(y, Beta):
     ConvexCandidate = []
-    for i in range(0, len(MixtureSamples)):
-        xval = (MixtureSamples[i][0] * y) - u(MixtureSamples[i], Beta)[0]
-        yval = (MixtureSamples[i][1] * y) - u(MixtureSamples[i], Beta)[1]
+    for i in range(0, len(MixtureSample)):
+        xval = (MixtureSample[i][0] * y) - u(MixtureSample[i], Beta)[0]
+        yval = (MixtureSample[i][1] * y) - u(MixtureSample[i], Beta)[1]
         ConvexCandidate.append((xval, yval))
     SumList = []
     for i in range(len(ConvexCandidate)):
-        SumList = ConvexCadidate[i][0] + ConvexCandidate[i][1]
+        SumList = ConvexCandidate[i][0] + ConvexCandidate[i][1]
     index = SumList.index(max(SumList))
     return ConvexCandidate[index]
 
@@ -96,6 +96,8 @@ def StandardNormalGenerator():
         Sample.append([x[i], y[i]])
     return Sample
 
+
+#--------------------------------------------------------------------- TESTING ------------------------------------------------------------------
 MixtureSample = MixtureSampleGenerator()
 StandardNormal = StandardNormalGenerator()
 
