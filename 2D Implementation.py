@@ -15,7 +15,7 @@ def F(z):
     alpha = 1.5 # Consistent with the density (As this gets larger, less samples are moved close to 0)
     xval = rx * math.erf(rx/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(rx/alpha) ** 2)
     yval = ry * math.erf(ry/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(ry/alpha) ** 2)
-    return (xval, yval)
+    return [xval, yval]
 
 def F_1(z):
     r = abs(z - center[0])# Random point in the cluster
@@ -53,14 +53,29 @@ def u(x, Beta):
 def uConjugate(y, Beta):
     ConvexCandidate = []
     for i in range(0, len(MixtureSample)):
-        xval = (MixtureSample[i][0] * y) - u(MixtureSample[i], Beta)[0]
-        yval = (MixtureSample[i][1] * y) - u(MixtureSample[i], Beta)[1]
-        ConvexCandidate.append((xval, yval))
+        ConjugateVector = np.subtract(np.dot(MixtureSample[i], y), u(MixtureSample[i], Beta))
+        ConvexCandidate.append(ConjugateVector)
     SumList = []
     for i in range(len(ConvexCandidate)):
-        SumList = ConvexCandidate[i][0] + ConvexCandidate[i][1]
+        SumList.append(np.linalg.norm(ConvexCandidate[i]))
     index = SumList.index(max(SumList))
     return ConvexCandidate[index]
+
+def D(Beta):
+    xvalSummationOfx = 0
+    yvalSummationOfx = 0
+    xvalSummationOfy = 0
+    yvalSummationOfy = 0
+    for i in range(0, len(MixtureSample) - 1):
+        xvalSummationOfx += u(MixtureSample[i], Beta)[0]
+        yvalSummationOfx += u(MixtureSample[i], Beta)[1]
+    for j in range(0, len(StandardNormal) - 1):
+        xvalSummationOfy += uConjugate(StandardNormal[j], Beta)[0]
+        yvalSummationOfy += uConjugate(StandardNormal[j], Beta)[1]
+    D = np.linalg.norm([(1/len(MixtureSample)) * xvalSummationOfx + (1/len(StandardNormal)) * xvalSummationOfy, (1/len(MixtureSample)) * yvalSummationOfx + (1/len(StandardNormal)) * yvalSummationOfy])
+    return D
+
+
 
 def SamplesUpdate(OldMixtureSample):
     NewMixtureSample = []
@@ -113,6 +128,8 @@ for i in range(50): # Maybe there is a problem of overfitting
     print("Iteration " + str(i))
     center = StandardNormal[random.randint(0, len(StandardNormal) - 1)]
     Beta = BetaCalculation()
+    DValue = D(Beta)
+    print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
 
 plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
