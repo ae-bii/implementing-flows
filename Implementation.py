@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import math
-import numdifftools
+import numdifftools as nd
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -92,7 +92,7 @@ def LLCalculation(Beta_1, Beta_2):
 def SamplesUpdate(MixtureSamples):
     NewMixtureSamples = []
     for i in range(0, len(MixtureSamples)):
-        NewMixtureSamples.append(MixtureSamples[i] + Beta_1 * numdifftools.Gradient(F_1)([MixtureSamples[i]]) + Beta_2 * numdifftools.Gradient(F_2)([MixtureSamples[i]]))
+        NewMixtureSamples.append(MixtureSamples[i] + Beta_1 * nd.Gradient(F_1)([MixtureSamples[i]]) + Beta_2 * nd.Gradient(F_2)([MixtureSamples[i]]))
     NewMixtureSamples = np.array(NewMixtureSamples)
 
     return NewMixtureSamples

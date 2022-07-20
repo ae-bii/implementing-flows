@@ -2,7 +2,7 @@
 import numpy as np
 import random
 import math
-import numdifftools
+import numdifftools as nd
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -81,8 +81,8 @@ def D(Beta): # Experimental
 def SamplesUpdate(OldMixtureSample):
     NewMixtureSample = []
     for i in range(0, len(OldMixtureSample)):
-        xval = OldMixtureSample[i][0] + Beta[0] * numdifftools.Gradient(F_1)([OldMixtureSample[i][0]])
-        yval = OldMixtureSample[i][1] + Beta[1] * numdifftools.Gradient(F_2)([OldMixtureSample[i][1]])
+        xval = OldMixtureSample[i][0] + Beta[0] * nd.Gradient(F_1)([OldMixtureSample[i][0]])
+        yval = OldMixtureSample[i][1] + Beta[1] * nd.Gradient(F_2)([OldMixtureSample[i][1]])
         NewMixtureSample.append([xval, yval])
     NewMixtureSample = np.array(NewMixtureSample)
     return NewMixtureSample
