@@ -120,7 +120,6 @@ CenterGeneratorList = MixtureSample + StandardNormal
 
 plt.subplot(1,3,3)
 plt.title("Initial Distribution")
-
 plt.scatter(*zip(*StandardNormal), color = 'r', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
@@ -145,7 +144,7 @@ while True: # Maybe there is a problem of overfitting
         break
 
 plt.subplot(1,3,2)
-plt.setTitle("Distribution After Optimal Transport")
+plt.title("Distribution After Optimal Transport")
 plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
