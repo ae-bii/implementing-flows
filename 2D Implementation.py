@@ -119,13 +119,13 @@ StandardNormal = StandardNormalGenerator()
 CenterGeneratorList = MixtureSample + StandardNormal
 
 plt.subplot(1,3,3)
-plt.title("Initial Distribution")
+plt.title("Target")
 plt.scatter(*zip(*StandardNormal), color = 'r', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
 
 plt.subplot(1,3,1)
-plt.title("Target Distribution")
+plt.title("Initial")
 plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
@@ -138,13 +138,13 @@ while True: # Maybe there is a problem of overfitting
     Beta_2 = Beta_2Calculation()
     OldD = DValue
     DValue = D(Beta_1, Beta_2)
-    print(abs(DValue - OldD))
+    print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
     if abs(DValue - OldD) < 0.001:
         break
 
 plt.subplot(1,3,2)
-plt.title("Distribution After Optimal Transport")
+plt.title("Optimal Transport")
 plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
