@@ -16,12 +16,12 @@ def distance(z1, z2):
     return math.sqrt(sum)
 
 def F_1(z):
-    r = distance(z, center1)
+    r = distance(z, center)
     alpha = 0.5 # Consistent with the density (As this gets larger, less samples are moved close to 0)
     return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
 
 def F_2(z):
-    r = distance(z, center2)
+    r = distance(z, center)
     alpha = 0.5
     return alpha + r - alpha * math.log(abs(alpha + r))
 
@@ -30,7 +30,8 @@ def BetaNewton(): # Newton's method (Experimental)
     G = nd.Gradient(D)([0, 0])
     HInverseNeg = (-1) * np.linalg.inv(H)
     Beta = np.matmul(HInverseNeg, G)
-    ParameterList = [1, 10/np.linalg.norm(Beta)]
+    LearningRate = 1 # Not sure how to choose this value
+    ParameterList = [1, LearningRate/np.linalg.norm(Beta)]
     return Beta * min(ParameterList) # min(ParameterList) can be understood as similar to the "Proportion" in gradient descent
 
 def u(x, Beta_1, Beta_2):
@@ -116,13 +117,7 @@ while True: # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     Iteration += 1
     CenterSelector = 0
-    center1 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
-    center2 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)] # Choose 2 different centers for different Fs (Experimental)
-    while CenterSelector == 0 and Iteration >= 2:
-        if np.linalg.norm(np.subtract(center1,center2)) <= 1:
-            center1 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
-        else:
-            CenterSelector = 1
+    center = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
     Beta = BetaNewton()
     print(Beta)
     Beta_1 = Beta[0]
