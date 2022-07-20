@@ -5,7 +5,7 @@ from scipy.special import expi
 e = math.e
 pi = math.pi
 
-# TODO: Implement in a way so that functions can be used in higher dimensions too
+# TODO: Implement using lists so that functions can be used in higher dimensions too
 class Potentialf:
     def bump_f(z, center):
         value = 0
