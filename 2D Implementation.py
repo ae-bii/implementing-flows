@@ -55,13 +55,8 @@ def u(x, Beta_1, Beta_2):
 def uConjugate(y, Beta_1, Beta_2):
     ConvexCandidate = []
     for i in range(0, len(MixtureSample)):
-        ConjugateVector = np.subtract(np.dot(MixtureSample[i], y), u(MixtureSample[i], Beta_1, Beta_2))
-        ConvexCandidate.append(ConjugateVector)
-    SumList = []
-    for i in range(len(ConvexCandidate)):
-        SumList.append(np.linalg.norm(ConvexCandidate[i]))
-    index = SumList.index(max(SumList))
-    return ConvexCandidate[index]
+        ConvexCandidate.append(np.dot(MixtureSample[i], y) - u(MixtureSample[i], Beta_1, Beta_2))
+    return max(ConvexCandidate)
 
 def D(Beta_1, Beta_2):
     xSummation = 0
