@@ -115,6 +115,7 @@ def StandardNormalGenerator():
 #------------------------------------------------------------------ TESTING (change to heatmap, add animtation)------------------------------------------------------------
 MixtureSample = MixtureSampleGenerator()
 StandardNormal = StandardNormalGenerator()
+CenterGeneratorList = MixtureSample + StandardNormal
 
 plt.subplot(1,2,1)
 plt.scatter(*zip(*StandardNormal), color = 'r', alpha = 0.2)
@@ -126,7 +127,7 @@ plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
 
 for i in range(50): # Maybe there is a problem of overfitting
     print("Iteration " + str(i))
-    center = StandardNormal[random.randint(0, len(StandardNormal) - 1)]
+    center = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
     Beta = BetaCalculation()
     DValue = D(Beta)
     print(DValue)
