@@ -3,79 +3,54 @@ import math
 import numdifftools as nd
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import numpy as np
 
 
 e = math.e
 pi = math.pi
 
+def distance(z1, z2):
+    sum = 0
+    for i in range(0,len(z1)-1):
+        sum += (z1[i] - z2[i]) ** 2
+    return math.sqrt(sum)
+
 def F_1(z):
-    rx = abs(z[0] - center[0])
-    ry = abs(z[1] - center[1])# Random point in the cluster
-    alpha = 1.5 # Consistent with the density (As this gets larger, less samples are moved close to 0)
-    xval = rx * math.erf(rx/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(rx/alpha) ** 2)
-    yval = ry * math.erf(ry/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(ry/alpha) ** 2)
-    return [xval, yval]
-
-def F_2(z):
-    rx = abs(z[0] - center[0])
-    ry = abs(z[1] - center[1])
-    alpha = 1.5
-    xval = alpha + rx - alpha * math.log(abs(alpha + rx))
-    yval = alpha + ry - alpha * math.log(abs(alpha + ry))
-    return [xval, yval]
-
-def F_Individual_1(z, element):
-    curCenter = center[element]
-    r = abs(z - curCenter)# Random point in the cluster
+    r = distance(z, center)
     alpha = 1.5 # Consistent with the density (As this gets larger, less samples are moved close to 0)
     return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
 
-def F_Individual_2(z, element):
-    curCenter = center[element]
-    r = abs(z - curCenter)
+def F_2(z):
+    r = distance(z, center)
     alpha = 1.5
     return alpha + r - alpha * math.log(abs(alpha + r))
 
 def Beta_1Calculation():
     Proportion = 0.5
-    xSummationDerivative = [0, 0]
-    ySummationDerivative = [0, 0]
-    Beta = []
+    xSummationDerivative = 0
+    ySummationDerivative = 0
     for j in range(0, len(StandardNormal)):
-        #CurTuple = F(StandardNormal[j])
-        ySummationDerivative[0] += F_1(StandardNormal[j])[0]
-        ySummationDerivative[1] += F_1(StandardNormal[j])[1]
+        ySummationDerivative += F_1(StandardNormal[j])
     for i in range(0, len(MixtureSample)):
-        xSummationDerivative[0] += F_1(MixtureSample[i])[0]
-        xSummationDerivative[1] += F_1(MixtureSample[i])[1]
-    Beta.append((-1/len(MixtureSample)) * xSummationDerivative[0] + \
-        (1/len(StandardNormal)) * ySummationDerivative[0])
-    Beta.append((-1/len(MixtureSample)) * xSummationDerivative[1] + \
-        (1/len(StandardNormal)) * ySummationDerivative[1])
-    return np.multiply(Beta, Proportion)
+        xSummationDerivative += F_1(MixtureSample[i])
+    Beta = (-1/len(MixtureSample)) * xSummationDerivative + \
+        (1/len(StandardNormal)) * ySummationDerivative
+    return Beta * Proportion
 
 def Beta_2Calculation():
     Proportion = 0.5
-    xSummationDerivative = [0, 0]
-    ySummationDerivative = [0, 0]
-    Beta = []
+    xSummationDerivative = 0
+    ySummationDerivative = 0
     for j in range(0, len(StandardNormal)):
-        #CurTuple = F(StandardNormal[j])
-        ySummationDerivative[0] += F_2(StandardNormal[j])[0]
-        ySummationDerivative[1] += F_2(StandardNormal[j])[1]
+        ySummationDerivative += F_2(StandardNormal[j])
     for i in range(0, len(MixtureSample)):
-        xSummationDerivative[0] += F_2(MixtureSample[i])[0]
-        xSummationDerivative[1] += F_2(MixtureSample[i])[1]
-    Beta.append((-1/len(MixtureSample)) * xSummationDerivative[0] + \
-        (1/len(StandardNormal)) * ySummationDerivative[0])
-    Beta.append((-1/len(MixtureSample)) * xSummationDerivative[1] + \
-        (1/len(StandardNormal)) * ySummationDerivative[1])
-    return np.multiply(Beta, Proportion)
+        xSummationDerivative += F_2(MixtureSample[i])
+    Beta = (-1/len(MixtureSample)) * xSummationDerivative + \
+        (1/len(StandardNormal)) * ySummationDerivative
+    return Beta * Proportion
 
 def u(x, Beta_1, Beta_2):
-    xval = (x[0] ** 2 / 2) +  Beta_1[0] * F_1(x)[0] + Beta_2[0] * F_2(x)[0]
-    yval = (x[1] ** 2 / 2) +  Beta_1[1] * F_1(x)[1] + Beta_2[1] * F_2(x)[1]
-    return [xval, yval]
+    return (((x[0] ** 2) + (x[1] ** 2)) / 2) + Beta_1 * F_1(x) + Beta_2 * F_2(x)
 
 def uConjugate(y, Beta_1, Beta_2):
     ConvexCandidate = []
@@ -89,27 +64,26 @@ def uConjugate(y, Beta_1, Beta_2):
     return ConvexCandidate[index]
 
 def D(Beta_1, Beta_2):
-    xvalSummationOfx = 0
-    yvalSummationOfx = 0
-    xvalSummationOfy = 0
-    yvalSummationOfy = 0
-    for i in range(0, len(MixtureSample) - 1):
-        xvalSummationOfx += u(MixtureSample[i], Beta_1, Beta_2)[0]
-        yvalSummationOfx += u(MixtureSample[i], Beta_1, Beta_2)[1]
-    for j in range(0, len(StandardNormal) - 1):
-        xvalSummationOfy += uConjugate(StandardNormal[j], Beta_1, Beta_2)[0]
-        yvalSummationOfy += uConjugate(StandardNormal[j], Beta_1, Beta_2)[1]
-    D = np.linalg.norm([(1/len(MixtureSample)) * xvalSummationOfx + (1/len(StandardNormal)) * xvalSummationOfy, (1/len(MixtureSample)) * yvalSummationOfx + (1/len(StandardNormal)) * yvalSummationOfy])
-    return D
+    xSummation = 0
+    ySummation = 0
+    for i in range(0, len(MixtureSample)):
+        xSummation += u(MixtureSample[i], Beta_1, Beta_2)
+    for j in range(0, len(StandardNormal)):
+        ySummation += uConjugate(StandardNormal[j], Beta_1, Beta_2)
+
+    LL = 1/len(MixtureSample) * xSummation + 1 / \
+        len(StandardNormal) * ySummation
+
+    return LL
 
 
 
 def SamplesUpdate(OldMixtureSample):
     NewMixtureSample = []
     for i in range(0, len(OldMixtureSample)):
-        xval = OldMixtureSample[i][0] + Beta_1[0] * nd.Gradient(F_Individual_1)([OldMixtureSample[i][0]], 0) + Beta_2[0] * nd.Gradient(F_Individual_2)([OldMixtureSample[i][0]], 0)
-        yval = OldMixtureSample[i][1] + Beta_1[1] * nd.Gradient(F_Individual_1)([OldMixtureSample[i][1]], 1) + Beta_2[1] * nd.Gradient(F_Individual_2)([OldMixtureSample[i][1]], 1)
-        NewMixtureSample.append([xval, yval])
+        xval = OldMixtureSample[i][0] + Beta_1 * nd.Gradient(F_1)(OldMixtureSample[i])[0] + Beta_2 * nd.Gradient(F_2)(OldMixtureSample[i])[0]
+        yval = OldMixtureSample[i][1] + Beta_1 * nd.Gradient(F_1)(OldMixtureSample[i])[1] + Beta_2 * nd.Gradient(F_2)(OldMixtureSample[i])[1]
+        NewMixtureSample.append([xval,yval])
     NewMixtureSample = np.array(NewMixtureSample)
     return NewMixtureSample
 
@@ -144,13 +118,17 @@ MixtureSample = MixtureSampleGenerator()
 StandardNormal = StandardNormalGenerator()
 CenterGeneratorList = MixtureSample + StandardNormal
 
-plt.subplot(1,2,1)
+plt.subplot(1,3,3)
+plt.setTitle("Initial Distribution")
 plt.scatter(*zip(*StandardNormal), color = 'r', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
 
-plt.subplot(1,2,2)
+plt.subplot(1,3,1)
+plt.setTitle("Target Distribution")
 plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
+plt.xlim(-4, 4)
+plt.ylim(-4, 4)
 
 DValue = 0
 while True: # Maybe there is a problem of overfitting
@@ -165,6 +143,8 @@ while True: # Maybe there is a problem of overfitting
     if abs(DValue - OldD) < 0.001:
         break
 
+plt.subplot(1,3,2)
+plt.setTitle("Distribution After Optimal Transport")
 plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
