@@ -119,13 +119,14 @@ StandardNormal = StandardNormalGenerator()
 CenterGeneratorList = MixtureSample + StandardNormal
 
 plt.subplot(1,3,3)
-plt.setTitle("Initial Distribution")
+plt.title("Initial Distribution")
+
 plt.scatter(*zip(*StandardNormal), color = 'r', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
 
 plt.subplot(1,3,1)
-plt.setTitle("Target Distribution")
+plt.title("Target Distribution")
 plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
