@@ -4,7 +4,6 @@ import math
 import numdifftools as nd
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import numpy as np
 
 
 e = math.e
