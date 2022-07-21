@@ -54,15 +54,34 @@ class Potentialf:
 
 
 class PotentialF:
+    def __init__(self, center=[], alpha=1, constant=0, k=0):
+        self._center = center
+        self._alpha = alpha
+        self._constant = constant
+        self._k = k
+        
+    def set_center(self, center):
+        self._center = center
+        
+    def set_alpha(self, alpha):
+        self._alpha = alpha
+        
+    def set_constant(self, constant):
+        self._constant = constant
+        
+    def set_k(self, k):
+        self._k = k
+    
     def bump_F(z, center, alpha, constant):
         r = distance(z, center)
         if r < 1/alpha:
             return (math.exp(1 / (alpha**2 * r**2 - 1)) * (alpha**2 * r**2 - 1) - expi(1 / (alpha**2 * r**2 - 1))) / (2 * alpha**2) + constant
         return r + constant
 
-    def giulio_F(z, center, alpha):
-        r = distance(z, center)
-        return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
+    # Testing if setter method works
+    def giulio_F(self, z):
+        r = distance(z, self._center)
+        return r * math.erf(r/self._alpha) + (self._alpha/math.sqrt(pi)) * math.pow(e, -(r/self._alpha) ** 2)
 
     def gaussian_F(z, center, alpha, constant):
         r = distance(z, center)
