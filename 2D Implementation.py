@@ -25,26 +25,14 @@ def F_2(z):
     alpha = 1.5
     return alpha + r - alpha * math.log(abs(alpha + r))
 
-def Beta_1Calculation():
+def BetaCalculation():
     Proportion = 0.5
     xSummationDerivative = 0
     ySummationDerivative = 0
     for j in range(0, len(StandardNormal)):
-        ySummationDerivative += F_1(StandardNormal[j])
+        ySummationDerivative += F(StandardNormal[j])
     for i in range(0, len(MixtureSample)):
-        xSummationDerivative += F_1(MixtureSample[i])
-    Beta = (-1/len(MixtureSample)) * xSummationDerivative + \
-        (1/len(StandardNormal)) * ySummationDerivative
-    return Beta * Proportion
-
-def Beta_2Calculation():
-    Proportion = 0.5
-    xSummationDerivative = 0
-    ySummationDerivative = 0
-    for j in range(0, len(StandardNormal)):
-        ySummationDerivative += F_2(StandardNormal[j])
-    for i in range(0, len(MixtureSample)):
-        xSummationDerivative += F_2(MixtureSample[i])
+        xSummationDerivative += F(MixtureSample[i])
     Beta = (-1/len(MixtureSample)) * xSummationDerivative + \
         (1/len(StandardNormal)) * ySummationDerivative
     return Beta * Proportion
@@ -129,8 +117,8 @@ DValue = 0
 while True: # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     center = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
-    Beta_1 = Beta_1Calculation()
-    Beta_2 = Beta_2Calculation()
+    Beta_1 = BetaCalculation(F_1)
+    Beta_2 = BetaCalculation(F_2)
     OldD = DValue
     DValue = D(Beta_1, Beta_2)
     print(DValue)
