@@ -18,12 +18,12 @@ def distance(z1, z2):
     return math.sqrt(sum)
 
 def F_0(z):
-    r = distance(z, center)
+    r = distance(z, center0)
     alpha = 1.5 # Consistent with the density (As this gets larger, less samples are moved close to 0)
     return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
 
 def F_1(z):
-    r = distance(z, center)
+    r = distance(z, center1)
     alpha = 1.5
     return alpha + r - alpha * math.log(abs(alpha + r))
 
@@ -114,7 +114,7 @@ def StandardNormalGenerator():
         Sample.append(np.array(cur))
     return np.array(Sample)
 
-dim = 2
+dim = 3
 
 MixtureSample = MixtureSampleGenerator()
 StandardNormal = StandardNormalGenerator()
@@ -122,13 +122,18 @@ CenterGeneratorList = MixtureSample + StandardNormal
 
 DValue = 0
 iteration = 0
+Proportion = 0.5
 while True:
-    center = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
+    while TooClose == 1:
+        center0 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
+        center1 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
+        if distance(center0, center1) >= 0.75:
+            TooClose = 0
     Beta = BetaCalculation()
     OldD = DValue
     DValue = D(Beta)
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
     iteration += 1
-    if abs(DValue - OldD) < 0.001 or iteration > 10:
+    if abs(DValue - OldD) < 0.0001 or iteration > 30:
         break
