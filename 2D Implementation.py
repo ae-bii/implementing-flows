@@ -5,6 +5,8 @@ import numdifftools as nd
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+random.seed(0)
+np.random.seed(0)
 
 e = math.e
 pi = math.pi
