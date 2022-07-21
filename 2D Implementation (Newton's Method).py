@@ -4,6 +4,7 @@ import math
 import numdifftools as nd
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import family_of_f
 
 random.seed(0)
 np.random.seed(0)
@@ -17,11 +18,6 @@ def distance(z1, z2):
         sum += (z1[i] - z2[i]) ** 2
     return math.sqrt(sum)
 
-def F_1(z):
-    r = distance(z, center_1)
-    alpha = 0.75 # Consistent with the density (As this gets larger, less samples are moved close to 0)
-    return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
-
 def F_2(z):
     r = distance(z, center_2)
     alpha = 0.75
@@ -33,10 +29,10 @@ def BetaNewton(): # Newton's method (Experimental)
     xSummationGradient_2 = 0
     ySummationGradient_2 = 0
     for i in range(0, len(MixtureSample)):
-        xSummationGradient_1 += F_1(MixtureSample[i])
+        xSummationGradient_1 += PotentialF.giulio_F(MixtureSample[i])
         xSummationGradient_2 += F_2(MixtureSample[i])
     for j in range(0, len(StandardNormal)):
-        ySummationGradient_1 += F_1(StandardNormal[j])
+        ySummationGradient_1 += PotentialF.giulio_F(StandardNormal[j])
         ySummationGradient_2 += F_2(StandardNormal[j])
     G_1 = (1/len(MixtureSample)) * xSummationGradient_1 - (1/len(StandardNormal)) * ySummationGradient_1
     G_2 = (1/len(MixtureSample)) * xSummationGradient_2 - (1/len(StandardNormal)) * ySummationGradient_2
@@ -46,9 +42,9 @@ def BetaNewton(): # Newton's method (Experimental)
     yHessian_21 = 0
     yHessian_22 = 0
     for l in range(0, len(StandardNormal)):
-        yHessian_11 += np.dot(nd.Gradient(F_1)([StandardNormal[l]]), nd.Gradient(F_1)(StandardNormal[l]))
-        yHessian_12 += np.dot(nd.Gradient(F_1)([StandardNormal[l]]), nd.Gradient(F_2)(StandardNormal[l]))
-        yHessian_21 += np.dot(nd.Gradient(F_2)([StandardNormal[l]]), nd.Gradient(F_1)(StandardNormal[l]))
+        yHessian_11 += np.dot(nd.Gradient(PotentialF.giulio_F)([StandardNormal[l]]), nd.Gradient(PotentialF.giulio_F)(StandardNormal[l]))
+        yHessian_12 += np.dot(nd.Gradient(PotentialF.giulio_F)([StandardNormal[l]]), nd.Gradient(F_2)(StandardNormal[l]))
+        yHessian_21 += np.dot(nd.Gradient(F_2)([StandardNormal[l]]), nd.Gradient(PotentialF.giulio_F)(StandardNormal[l]))
         yHessian_22 += np.dot(nd.Gradient(F_2)([StandardNormal[l]]), nd.Gradient(F_2)(StandardNormal[l]))
     H_11 = (1/len(StandardNormal)) * yHessian_11
     H_12 = (1/len(StandardNormal)) * yHessian_12
@@ -63,7 +59,7 @@ def BetaNewton(): # Newton's method (Experimental)
     return Beta * min(ParameterList) # min(ParameterList) can be understood as similar to the "Proportion" in gradient descent
 
 def u(x, Beta_1, Beta_2):
-    return (((x[0] ** 2) + (x[1] ** 2)) / 2) + Beta_1 * F_1(x) + Beta_2 * F_2(x)
+    return (((x[0] ** 2) + (x[1] ** 2)) / 2) + Beta_1 * PotentialF.giulio_F(x) + Beta_2 * F_2(x)
 
 def uConjugate(y, Beta_1, Beta_2):
     ConvexCandidate = []
@@ -90,8 +86,8 @@ def D(Beta):
 def SamplesUpdate(OldMixtureSample):
     NewMixtureSample = []
     for i in range(0, len(OldMixtureSample)):
-        xval = OldMixtureSample[i][0] + Beta_1 * nd.Gradient(F_1)(OldMixtureSample[i])[0] + Beta_2 * nd.Gradient(F_2)(OldMixtureSample[i])[0]
-        yval = OldMixtureSample[i][1] + Beta_1 * nd.Gradient(F_1)(OldMixtureSample[i])[1] + Beta_2 * nd.Gradient(F_2)(OldMixtureSample[i])[1]
+        xval = OldMixtureSample[i][0] + Beta_1 * nd.Gradient(PotentialF.giulio_F)(OldMixtureSample[i])[0] + Beta_2 * nd.Gradient(F_2)(OldMixtureSample[i])[0]
+        yval = OldMixtureSample[i][1] + Beta_1 * nd.Gradient(PotentialF.giulio_F)(OldMixtureSample[i])[1] + Beta_2 * nd.Gradient(F_2)(OldMixtureSample[i])[1]
         NewMixtureSample.append([xval,yval])
     NewMixtureSample = np.array(NewMixtureSample)
     return NewMixtureSample
@@ -127,6 +123,9 @@ MixtureSample = MixtureSampleGenerator()
 StandardNormal = StandardNormalGenerator()
 CenterGeneratorList = MixtureSample + StandardNormal
 
+PotentialF = family_of_f.PotentialF()
+
+
 plt.subplot(1,3,3)
 plt.title("Target")
 plt.scatter(*zip(*StandardNormal), color = 'r', alpha = 0.2)
@@ -151,6 +150,8 @@ while True: # Maybe there is a problem of overfitting
         center_2 = MixtureSample[random.randint(0, len(MixtureSample) - 1)]
     while distance(center_1, center_2) <= 0.75:
         center_1 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
+    PotentialF.set_center(center_1)
+    PotentialF.set_alpha(0.75)
     Beta = BetaNewton()
     print(Beta)
     Beta_1 = Beta[0]
