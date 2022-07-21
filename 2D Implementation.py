@@ -25,7 +25,7 @@ def F_2(z):
     alpha = 1.5
     return alpha + r - alpha * math.log(abs(alpha + r))
 
-def BetaCalculation():
+def BetaCalculation(F):
     Proportion = 0.5
     xSummationDerivative = 0
     ySummationDerivative = 0
