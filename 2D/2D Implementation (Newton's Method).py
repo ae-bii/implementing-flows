@@ -18,11 +18,6 @@ def distance(z1, z2):
         sum += (z1[i] - z2[i]) ** 2
     return math.sqrt(sum)
 
-def F_2(z):
-    r = distance(z, center_2)
-    alpha = 0.75
-    return alpha + r - alpha * math.log(abs(alpha + r))
-
 def BetaNewton(): # Newton's method (Experimental)
     xSummationGradient_1 = 0
     ySummationGradient_1 = 0
