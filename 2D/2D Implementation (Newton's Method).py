@@ -20,10 +20,9 @@ def distance(z1, z2):
 
 # REVISED:
 def BetaNewton(): # Newton's method (Experimental)
-    xSummationGradient = np.array([0, 0, 0, 0, 0])
-    ySummationGradient = np.array([0, 0, 0, 0, 0])
-    G = np.array([0, 0, 0, 0, 0])
-    
+    xSummationGradient = [0, 0, 0, 0, 0]
+    ySummationGradient = [0, 0, 0, 0, 0]
+    G = [0, 0, 0, 0, 0]
     for i in range(0, len(MixtureSample)):
         xSummationGradient[0] += PotentialF_1.giulio_F(MixtureSample[i])
         xSummationGradient[1] += PotentialF_2.gaussian_F(MixtureSample[i])
@@ -37,18 +36,18 @@ def BetaNewton(): # Newton's method (Experimental)
         ySummationGradient[3] += PotentialF_4.inverseQuadratic_F(StandardNormal[j])
         ySummationGradient[4] += PotentialF_5.inverseMultiquadric_F(StandardNormal[j])
     for k in range(0, 5):
-        G[i] = (1/len(MixtureSample)) * xSummationGradient[k] - (1/len(StandardNormal)) * ySummationGradient[k]
-
+        G[k] = (1/len(MixtureSample)) * xSummationGradient[k] - (1/len(StandardNormal)) * ySummationGradient[k]
+    G = np.array(G)
     yHessian = np.zeros([5,5])
     for l in range(0, len(StandardNormal)):
-        F_gradient = [nd.Gradient(PotentialF_1.giulio_F)([StandardNormal[l]],
-        nd.Gradient(PotentialF_2.gaussian_F)(StandardNormal[l])),
+        F_gradient = [nd.Gradient(PotentialF_1.giulio_F)([StandardNormal[l]]),
+        nd.Gradient(PotentialF_2.gaussian_F)(StandardNormal[l]),
         nd.Gradient(PotentialF_3.multiquadric_F)(StandardNormal[l]),
         nd.Gradient(PotentialF_4.inverseQuadratic_F)(StandardNormal[l]),
         nd.Gradient(PotentialF_5.inverseMultiquadric_F)(StandardNormal[l])]
         for m in range(0, 5):
             for n in range(0, 5):
-                yHessian[m][n] = np.dot(F_gradient[m], F_gradient[n])
+                yHessian[m][n] += np.dot(F_gradient[m], F_gradient[n])
     
     H = np.multiply(yHessian, 1/len(StandardNormal))
     HInverseNeg = (-1) * np.linalg.inv(H)
