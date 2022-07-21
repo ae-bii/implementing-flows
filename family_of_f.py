@@ -93,7 +93,7 @@ class PotentialF:
         return r + self._constant
 
     def giulio_F(self, z):
-        r = distance(z, self._self._center)
+        r = distance(z, self._center)
         return r * math.erf(r/self._alpha) + (self._alpha/math.sqrt(pi)) * math.pow(e, -(r/self._alpha) ** 2)
 
     def gaussian_F(self, z):
