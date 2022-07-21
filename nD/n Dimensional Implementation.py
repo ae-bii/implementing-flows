@@ -1,8 +1,3 @@
-"""
-DISREGARD THIS FOR NOW
-I'm just trying to improve performance by using multiple concurrent processes
-"""
-
 import numpy as np
 import random
 import math
