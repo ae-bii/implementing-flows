@@ -18,10 +18,7 @@ def distance(z1, z2):
         sum += (z1[i] - z2[i]) ** 2
     return math.sqrt(sum)
 
-def F_2(z):
-    r = distance(z, center_2)
-    alpha = 0.75
-    return alpha + r - alpha * math.log(abs(alpha + r))
+
 
 def BetaNewton(): # Newton's method (Experimental)
     xSummationGradient_1 = 0
@@ -140,7 +137,7 @@ def BetaNewton(): # Newton's method (Experimental)
     return Beta * min(ParameterList) # min(ParameterList) can be understood as similar to the "Proportion" in gradient descent
 
 def u(x, Beta):
-    return (((x[0] ** 2) + (x[1] ** 2)) / 2) + Beta[0] * PotentialF_1.giulio_F(x) + Beta[1] * PotentialF_2.gaussian_F(x) + Beta[2] * PotentialF_3.multiquadric_F(x) + Beta[3] * PotentialF_4.inverseQuadratic_F + Beta[4] * PotentialF_5.inverseMultiquadric_F(x)
+    return (((x[0] ** 2) + (x[1] ** 2)) / 2) + Beta[0] * PotentialF_1.giulio_F(x) + Beta[1] * PotentialF_2.gaussian_F(x) + Beta[2] * PotentialF_3.multiquadric_F(x) + Beta[3] * PotentialF_4.inverseQuadratic_F(x) + Beta[4] * PotentialF_5.inverseMultiquadric_F(x)
 
 def uConjugate(y, Beta):
     ConvexCandidate = []
@@ -246,7 +243,6 @@ while True: # Maybe there is a problem of overfitting
     PotentialF_4.set_constant(1)
     PotentialF_5.set_constant(1)
     Beta = BetaNewton()
-    print(Beta)
     OldD = DValue
     DValue = D(Beta)
     print(DValue)
