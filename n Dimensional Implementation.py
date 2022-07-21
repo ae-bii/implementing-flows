@@ -27,13 +27,12 @@ def F_1(z):
     alpha = 1.5
     return alpha + r - alpha * math.log(abs(alpha + r))
 
-
 def BetaCalculation():
     Proportion = 0.5
     xSummationDerivative = [0, 0]
     ySummationDerivative = [0, 0]
     Beta = [0, 0]
-    for j in range(0, len(StandardNormal)):
+    for j in range(0, len(StandardNormal)):            
         ySummationDerivative[0] += F_0(StandardNormal[j])
         ySummationDerivative[1] += F_1(StandardNormal[j])
         #ySummationDerivative[2] += F_2(StandardNormal[i])
@@ -78,16 +77,19 @@ def SamplesUpdate(OldMixtureSample):
     return NewMixtureSample
 
 def MixtureSampleGenerator():
-    mean1 = [1, -1, 1]
-    mean2 = [-1, 1, -2]
-    mean3 = [-1, 2, -1]
-    cov = np.array([0.5, 0.5, 0.5])
-    cov1 = np.diag(cov**dim)
-    cov2 = np.diag(cov**dim)
-    cov3 = np.diag(cov**dim)
-    x = np.random.multivariate_normal(mean1, cov1, 200)
-    y = np.random.multivariate_normal(mean2, cov2, 200)
-    z = np.random.multivariate_normal(mean3, cov3, 200)
+    mean1 = []
+    mean2 = []
+    mean3 = []
+    for i in range(dim):
+        mean1.append(random.random()*2)
+        mean2.append(random.random()*2)
+        mean3.append(random.random()*2)
+    mean1, mean2, mean3 = np.array(mean1), np.array(mean2), np.array(mean3)
+    cov = np.array([0.5]*dim)
+    cov = np.diag(cov**dim)
+    x = np.random.multivariate_normal(mean1, cov, 200)
+    y = np.random.multivariate_normal(mean2, cov, 200)
+    z = np.random.multivariate_normal(mean3, cov, 200)
     MixtureSample = []
     for i in range(200):
         RandomSelector = random.random()
@@ -102,20 +104,24 @@ def MixtureSampleGenerator():
 
 def StandardNormalGenerator():
     Sample = []
-    x = np.random.standard_normal(200)
-    y = np.random.standard_normal(200)
-    z = np.random.standard_normal(200)
-    for i in range(200):
-        Sample.append(np.array([x[i], y[i], z[i]]))
-    return Sample
+    Normals = []
+    for i in range(dim):
+        Normals.append(np.random.standard_normal(200))
+    for j in range(200):
+        cur = []
+        for k in range(dim):
+            cur.append(Normals[k][j])
+        Sample.append(np.array(cur))
+    return np.array(Sample)
 
-dim = 3
+dim = 2
 
 MixtureSample = MixtureSampleGenerator()
 StandardNormal = StandardNormalGenerator()
 CenterGeneratorList = MixtureSample + StandardNormal
 
 DValue = 0
+iteration = 0
 while True:
     center = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
     Beta = BetaCalculation()
@@ -123,5 +129,6 @@ while True:
     DValue = D(Beta)
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
-    if abs(DValue - OldD) < 0.001:
+    iteration += 1
+    if abs(DValue - OldD) < 0.001 or iteration > 10:
         break
