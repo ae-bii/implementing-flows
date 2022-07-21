@@ -49,7 +49,7 @@ def BetaCalculation():
 def u(x, Beta):
     return np.dot(x, x)/2 + Beta[0] * F_0(x) + Beta[1] * F_1(x)
 
-def uConjugate(y, Beta_1):
+def uConjugate(y, Beta):
     ConvexCandidate = []
     for i in range(0, len(MixtureSample)):
         ConvexCandidate.append(np.dot(MixtureSample[i], y) - u(MixtureSample[i], Beta))
