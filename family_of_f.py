@@ -7,10 +7,7 @@ pi = math.pi
 
 
 def distance(z1, z2):
-    sum = 0
-    for i in range(0, len(z1)-1):
-        sum += (z1[i] - z2[i]) ** 2
-    return math.sqrt(sum)
+    return np.linalg.norm(z1, z2)
 
 
 class Potentialf:
