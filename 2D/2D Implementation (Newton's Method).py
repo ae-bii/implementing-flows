@@ -15,11 +15,6 @@ np.random.seed(0)
 e = math.e
 pi = math.pi
 
-def distance(z1, z2):
-    sum = 0
-    for i in range(0,len(z1)-1):
-        sum += (z1[i] - z2[i]) ** 2
-    return math.sqrt(sum)
 
 # REVISED:
 def BetaNewton(): # Newton's method (Experimental)
@@ -98,10 +93,10 @@ def MixtureSampleGenerator():
     cov1 = [[0.5, 0], [0, 0.5]]
     mean2 = [-1, 1]
     cov2 = [[0.5, 0], [0, 0.5]]
-    x = np.random.multivariate_normal(mean1, cov1, 100)
-    y = np.random.multivariate_normal(mean2, cov2, 100)
+    x = np.random.multivariate_normal(mean1, cov1, 500)
+    y = np.random.multivariate_normal(mean2, cov2, 500)
     MixtureSample = []
-    for i in range(100):
+    for i in range(500):
         RandomSelector = random.random()
         if RandomSelector > 0.7:
             MixtureSample.append(x[i])
@@ -112,9 +107,9 @@ def MixtureSampleGenerator():
 
 def StandardNormalGenerator():
     Sample = []
-    x = np.random.standard_normal(100)
-    y = np.random.standard_normal(100)
-    for i in range(100):
+    x = np.random.standard_normal(500)
+    y = np.random.standard_normal(500)
+    for i in range(500):
         Sample.append([x[i], y[i]])
     return Sample
 
