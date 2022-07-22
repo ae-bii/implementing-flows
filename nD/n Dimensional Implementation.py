@@ -124,6 +124,7 @@ DValue = 0
 iteration = 0
 Proportion = 0.5
 while True:
+    TooClose = 1
     while TooClose == 1:
         center0 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
         center1 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
