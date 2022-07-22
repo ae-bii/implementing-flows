@@ -50,7 +50,7 @@ def BetaNewton(): # Newton's method (Experimental)
     H = np.multiply(yHessian, 1/len(StandardNormal))
     HInverseNeg = (-1) * np.linalg.inv(H)
     Beta = np.matmul(HInverseNeg, G)
-    LearningRate = 0.01 # Not sure how to choose this value
+    LearningRate = 1 # Not sure how to choose this value
     ParameterList = [1, LearningRate/np.linalg.norm(Beta)]
     return Beta * min(ParameterList) # min(ParameterList) can be understood as similar to the "Proportion" in gradient descent
 
@@ -89,9 +89,9 @@ def SamplesUpdate(OldMixtureSample):
     return NewMixtureSample
 
 def MixtureSampleGenerator():
-    mean1 = [1, -1]
+    mean1 = [1, 2]
     cov1 = [[0.5, 0], [0, 0.5]]
-    mean2 = [-1, 1]
+    mean2 = [2, 1]
     cov2 = [[0.5, 0], [0, 0.5]]
     x = np.random.multivariate_normal(mean1, cov1, 500)
     y = np.random.multivariate_normal(mean2, cov2, 500)
@@ -165,7 +165,7 @@ while True: # Maybe there is a problem of overfitting
     DValue = D(Beta)
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
-    if abs(DValue - OldD) < 0.0001 or Iteration > 25:
+    if abs(DValue - OldD) < 0.0001 or Iteration > 10:
         break
 
 plt.subplot(1,3,2)
