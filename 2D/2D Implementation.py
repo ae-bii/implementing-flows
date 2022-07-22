@@ -15,19 +15,15 @@ np.random.seed(0)
 e = math.e
 pi = math.pi
 
-def distance(z1, z2):
-    sum = 0
-    for i in range(0,len(z1)-1):
-        sum += (z1[i] - z2[i]) ** 2
-    return math.sqrt(sum)
+
 
 def F_1(z):
-    r = distance(z, center)
+    r = np.linalg.norm(np.subtract(z, center))
     alpha = 1.5 # Consistent with the density (As this gets larger, less samples are moved close to 0)
     return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
 
 def F_2(z):
-    r = distance(z, center)
+    r = np.linalg.norm(np.subtract(z, center))
     alpha = 1.5
     return alpha + r - alpha * math.log(abs(alpha + r))
 
@@ -77,9 +73,9 @@ def SamplesUpdate(OldMixtureSample):
     return NewMixtureSample
 
 def MixtureSampleGenerator():
-    mean1 = [1, -1]
+    mean1 = [1, 2]
     cov1 = [[0.5, 0], [0, 0.5]]
-    mean2 = [-1, 1]
+    mean2 = [2, 1]
     cov2 = [[0.5, 0], [0, 0.5]]
     x = np.random.multivariate_normal(mean1, cov1, 500)
     y = np.random.multivariate_normal(mean2, cov2, 500)
