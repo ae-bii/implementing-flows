@@ -7,7 +7,8 @@ pi = math.pi
 
 
 def distance(z1, z2):
-    return np.linalg.norm(np.subtract(z1,z2))
+    a = np.subtract(z1,z2)
+    return np.sqrt(sum(np.square(a)))
 
 class Bump_F:
     def __init__(self, alpha=1, constant=0):

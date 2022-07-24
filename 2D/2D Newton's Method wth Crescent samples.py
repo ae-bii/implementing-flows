@@ -16,6 +16,10 @@ np.random.seed(0)
 e = math.e
 pi = math.pi
 
+# Our own norm method because the np.norm was too slow
+def norm(i):
+    return np.sqrt(sum(np.square(i)))
+
 
 # REVISED:
 def BetaNewton(): # Newton's method (Experimental)
@@ -44,7 +48,7 @@ def BetaNewton(): # Newton's method (Experimental)
     HInverseNeg = (-1) * np.linalg.inv(H)
     Beta = np.matmul(HInverseNeg, G)
     LearningRate = 0.5 # Not sure how to choose this value
-    ParameterList = [1, LearningRate/np.linalg.norm(Beta)]
+    ParameterList = [1, LearningRate/norm(Beta)]
     return Beta * min(ParameterList) # min(ParameterList) can be understood as similar to the "Proportion" in gradient descent
 
 def u(x, Beta):
@@ -144,8 +148,8 @@ DValue = 0
 Iteration = 0
 
 # Profiling code
-# profiler = cProfile.Profile()
-# profiler.enable()
+profiler = cProfile.Profile()
+profiler.enable()
 
 while True: # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
@@ -163,10 +167,10 @@ while True: # Maybe there is a problem of overfitting
     if abs(DValue - OldD) < 0.0001 or Iteration > 10:
         break
     
-# profiler.disable()
-# stats = pstats.Stats(profiler).sort_stats('tottime')
-# stats.strip_dirs()
-# stats.dump_stats("newton.prof")
+profiler.disable()
+stats = pstats.Stats(profiler).sort_stats('tottime')
+stats.strip_dirs()
+stats.dump_stats("newtonupdated.prof")
 
 
 plt.subplot(1,3,2)
