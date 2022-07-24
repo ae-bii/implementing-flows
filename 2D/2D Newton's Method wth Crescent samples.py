@@ -8,6 +8,7 @@ import numdifftools as nd
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import functions
+import cProfile, pstats
 
 random.seed(0)
 np.random.seed(0)
@@ -120,11 +121,11 @@ CrescentSample = np.loadtxt("SampleMoon.csv", delimiter=",")
 CenterGeneratorList = MixtureSample + CrescentSample
 
 
-PotentialFs = [functions.Giulio_F(alpha=0.75),
-                functions.Gaussian_F(alpha=0.75, constant=1),
-                functions.Multiquadric_F(alpha=0.75, constant=1),
-                functions.InverseQuadratic_F(alpha=0.75, constant=1),
-                functions.InverseMultiquadric_F(alpha=0.75, constant=1)]
+PotentialFs = [functions.Giulio_F(alpha=1),
+                functions.Gaussian_F(alpha=1, constant=1),
+                functions.Multiquadric_F(alpha=1, constant=1),
+                functions.InverseQuadratic_F(alpha=1, constant=1),
+                functions.InverseMultiquadric_F(alpha=1, constant=1)]
 NumFs = len(PotentialFs)
 
 plt.subplot(1,3,3)
@@ -141,6 +142,11 @@ plt.ylim(-4, 4)
 
 DValue = 0
 Iteration = 0
+
+# Profiling code
+# profiler = cProfile.Profile()
+# profiler.enable()
+
 while True: # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     Iteration += 1
@@ -156,6 +162,12 @@ while True: # Maybe there is a problem of overfitting
     MixtureSample = SamplesUpdate(MixtureSample)
     if abs(DValue - OldD) < 0.0001 or Iteration > 10:
         break
+    
+# profiler.disable()
+# stats = pstats.Stats(profiler).sort_stats('tottime')
+# stats.strip_dirs()
+# stats.dump_stats("newton.prof")
+
 
 plt.subplot(1,3,2)
 plt.title("Optimal Transport")
