@@ -163,14 +163,14 @@ DValue = 0
 Iteration = 0
 
 # Converts time in seconds to hours, minutes, seconds
-def time_convert(sec):
-  mins = sec // 60
-  sec = sec % 60
-  hours = mins // 60
-  mins = mins % 60
-  print("Time Lapsed = {0}:{1}:{2}".format(int(hours),int(mins),sec))
+# def time_convert(sec):
+#   mins = sec // 60
+#   sec = sec % 60
+#   hours = mins // 60
+#   mins = mins % 60
+#   print("Time Lapsed = {0}:{1}:{2}".format(int(hours),int(mins),sec))
 
-start_time = time.time()
+# start_time = time.time()
 
 for i in range(0, 10): # Maybe there is a problem of overfitting
     Iteration += 1
@@ -197,9 +197,9 @@ for i in range(0, 10): # Maybe there is a problem of overfitting
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
 
-end_time = time.time()
+# end_time = time.time()
 
-time_convert(end_time-start_time)
+# time_convert(end_time-start_time)
 
 plt.title("Optimal Transport")
 ax.scatter3D(*zip(*MixtureSample), color = 'r', alpha = 0.2)
