@@ -146,6 +146,7 @@ plt.ylim(-4, 4)
 
 DValue = 0
 Iteration = 0
+Beta = 0
 
 # Profiling code
 profiler = cProfile.Profile()
@@ -154,17 +155,20 @@ profiler.enable()
 while True: # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     Iteration += 1
+    if Iteration >= 10:
+        CenterGeneratorList = MixtureSample + CrescentSample
     CenterList = []
     for i in range(0,NumFs):
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
         CenterList.append(c)
         PotentialFs[i].setCenter(c)
+    OldBeta = Beta
     Beta = BetaNewton()
     OldD = DValue
     DValue = D(Beta)
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
-    if abs(DValue - OldD) < 0.0001 or Iteration > 10:
+    if norm(OldBeta - Beta) < 0.0001 or Iteration > 25:
         break
     
 profiler.disable()
