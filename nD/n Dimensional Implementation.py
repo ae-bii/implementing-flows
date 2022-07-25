@@ -157,5 +157,5 @@ while True:
     if abs(DValue - OldD) < 0.0001 or iteration > 30:
         break
 
-visualize(StandardNormal)
+visualize(StandardNormal, dim, 'g')
 visualize(MixtureSample, dim, 'r')
