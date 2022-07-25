@@ -1,4 +1,3 @@
-from pyclbr import Function
 import sys
 sys.path.append("../implementing-flows")
 
@@ -40,7 +39,7 @@ def BetaNewton(): # Newton's method (Experimental)
     for l in range(0, len(CrescentSample)):
         F_gradient = []
         for f in range(0,NumFs):
-            F_gradient.append(FunctionGradient[f](CrescentSample[l]))
+            F_gradient.append(nd.Gradient(PotentialFs[f])(CrescentSample[l]))
         for m in range(0, NumFs):
             for n in range(0, NumFs):
                 yHessian[m][n] += np.dot(F_gradient[m], F_gradient[n])
@@ -84,7 +83,7 @@ def SamplesUpdate(OldMixtureSample):
         F_eval_x = np.zeros(NumFs)
         F_eval_y = np.zeros(NumFs)
         for f in range(0,NumFs):
-            gradient = FunctionGradient[f](OldMixtureSample[i])
+            gradient = nd.Gradient(PotentialFs[f])(OldMixtureSample[i])
             F_eval_x[f] = gradient[0]
             F_eval_y[f] = gradient[1]
 
@@ -132,9 +131,6 @@ PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.InverseQuadratic_F(alpha=1, constant=1),
                 functions.InverseMultiquadric_F(alpha=1, constant=1)]
 NumFs = len(PotentialFs)
-FunctionGradient = []
-for f in range(NumFs):
-    FunctionGradient.append(nd.Gradient(PotentialFs[f]))
 
 plt.subplot(1,3,3)
 plt.title("Target")
