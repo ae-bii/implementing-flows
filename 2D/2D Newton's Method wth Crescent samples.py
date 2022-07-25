@@ -31,7 +31,7 @@ def BetaNewton(): # Newton's method (Experimental)
             xSummationGradient[f] += PotentialFs[f](MixtureSample[i])
     for j in range(0, len(CrescentSample)):
         for f in range(0,NumFs):
-            ySummationGradient[f] += PotentialFs[f](CrescentSample[i])
+            ySummationGradient[f] += PotentialFs[f](CrescentSample[j])
     for k in range(0, NumFs):
         G[k] = (1/len(MixtureSample)) * xSummationGradient[k] - (1/len(CrescentSample)) * ySummationGradient[k]
     G = np.array(G)
@@ -122,7 +122,7 @@ def StandardNormalGenerator():
 #------------------------------------------------------------------ TESTING (change to heatmap, add animtation)------------------------------------------------------------
 MixtureSample = MixtureSampleGenerator()
 CrescentSample = np.loadtxt("SampleMoon.csv", delimiter=",")
-CenterGeneratorList = MixtureSample + CrescentSample
+CenterGeneratorList = CrescentSample
 
 
 PotentialFs = [functions.Giulio_F(alpha=1),
