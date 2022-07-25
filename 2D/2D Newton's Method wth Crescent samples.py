@@ -149,8 +149,8 @@ Iteration = 0
 Beta = 0
 
 # Profiling code
-profiler = cProfile.Profile()
-profiler.enable()
+# profiler = cProfile.Profile()
+# profiler.enable()
 
 while True: # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
@@ -171,10 +171,10 @@ while True: # Maybe there is a problem of overfitting
     if norm(OldBeta - Beta) < 0.0001 or Iteration > 25:
         break
     
-profiler.disable()
-stats = pstats.Stats(profiler).sort_stats('tottime')
-stats.strip_dirs()
-stats.dump_stats("newtonupdated.prof")
+# profiler.disable()
+# stats = pstats.Stats(profiler).sort_stats('tottime')
+# stats.strip_dirs()
+# stats.dump_stats("newtonupdated.prof")
 
 
 plt.subplot(1,3,2)
