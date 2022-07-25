@@ -114,17 +114,35 @@ def StandardNormalGenerator():
         Sample.append(np.array(cur))
     return np.array(Sample)
 
+def nCr(n,r):
+    f = math.factorial
+    return f(n) // f(r) // f(n-r)
+
+def visualize(data, dim, col):
+    numVisuals = nCr(dim, 2)
+    k = 1
+    for i in range(dim):
+        for j in range(dim - i - 1):
+            x = int(i+1)
+            y = int(i+j+1)
+            cur = zip([x[i] for x in data], [x[i+j] for x in data])
+            plt.subplot(1, numVisuals, k)
+            plt.title("Cross Section")
+            plt.scatter(*zip(*data),  color = col, alpha = 0.2)
+            k += 1
+    plt.show()
+
 dim = 3
 
 MixtureSample = MixtureSampleGenerator()
 StandardNormal = StandardNormalGenerator()
-CenterGeneratorList = MixtureSample + StandardNormal
 
 DValue = 0
 iteration = 0
 Proportion = 0.5
 while True:
     TooClose = 1
+    CenterGeneratorList = MixtureSample + StandardNormal
     while TooClose == 1:
         center0 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
         center1 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
@@ -138,3 +156,6 @@ while True:
     iteration += 1
     if abs(DValue - OldD) < 0.0001 or iteration > 30:
         break
+
+visualize(StandardNormal)
+visualize(MixtureSample, dim, 'r')
