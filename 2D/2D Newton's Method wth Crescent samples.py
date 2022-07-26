@@ -9,6 +9,10 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import functions
 import cProfile, pstats
+import time
+
+start = time.time()
+
 
 random.seed(0)
 np.random.seed(0)
@@ -19,7 +23,16 @@ pi = math.pi
 # Our own norm method because the np.norm was too slow
 def norm(i):
     return np.sqrt(sum(np.square(i)))
-
+def F0(X):
+    return PotentialFs[0](X)
+def F1(X):
+    return PotentialFs[1](X)
+def F2(X):
+    return PotentialFs[2](X)
+def F3(X):
+    return PotentialFs[3](X)
+def F4(X):
+    return PotentialFs[4](X)
 
 # REVISED:
 def BetaNewton(): # Newton's method (Experimental)
@@ -27,8 +40,8 @@ def BetaNewton(): # Newton's method (Experimental)
     ySummationGradient = np.zeros(NumFs)
     G = np.zeros(NumFs)
     for f in range(0,NumFs):
-        xSummationGradient[f] = sum(PotentialFs[f](MixtureSample))
-        ySummationGradient[f] = sum(PotentialFs[f](CrescentSample))
+        xSummationGradient[f] = sum(np.apply_along_axis(FList[f],1,MixtureSample))
+        ySummationGradient[f] = sum(np.apply_along_axis(FList[f],1,CrescentSample))
     for k in range(0, NumFs):
         G[k] = (1/len(MixtureSample)) * xSummationGradient[k] - (1/len(CrescentSample)) * ySummationGradient[k]
     G = np.array(G)
@@ -118,17 +131,17 @@ def StandardNormalGenerator():
 
 #------------------------------------------------------------------ TESTING (change to heatmap, add animtation)------------------------------------------------------------
 MixtureSample = MixtureSampleGenerator()
-CrescentSample = np.loadtxt("SampleMoon.csv", delimiter=",")
+CrescentSample = np.loadtxt("implementing-flows/SampleMoon.csv", delimiter=",")
 CenterGeneratorList = CrescentSample
 
-
+print(MixtureSample[1])
 PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.Gaussian_F(alpha=1, constant=1),
                 functions.Multiquadric_F(alpha=1, constant=1),
                 functions.InverseQuadratic_F(alpha=1, constant=1),
                 functions.InverseMultiquadric_F(alpha=1, constant=1)]
 NumFs = len(PotentialFs)
-
+FList = [F0,F1,F2,F3,F4]
 plt.subplot(1,3,3)
 plt.title("Target")
 plt.scatter(*zip(*CrescentSample), color = 'r', alpha = 0.2)
@@ -146,8 +159,8 @@ Iteration = 0
 Beta = 0
 
 # Profiling code
-# profiler = cProfile.Profile()
-# profiler.enable()
+profiler = cProfile.Profile()
+profiler.enable()
 
 while True: # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
@@ -168,10 +181,10 @@ while True: # Maybe there is a problem of overfitting
     if norm(OldBeta - Beta) < 0.0001 or Iteration > 25:
         break
     
-# profiler.disable()
-# stats = pstats.Stats(profiler).sort_stats('tottime')
-# stats.strip_dirs()
-# stats.dump_stats("newtonupdated.prof")
+profiler.disable()
+stats = pstats.Stats(profiler).sort_stats('tottime')
+stats.strip_dirs()
+stats.dump_stats("newtoncrescent.prof")
 
 
 plt.subplot(1,3,2)
@@ -180,3 +193,4 @@ plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
 plt.show()
+
