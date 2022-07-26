@@ -152,5 +152,5 @@ while True:
     if abs(DValue - OldD) < 0.0001 or iteration > 25:
         break
 
-visualize(Old, dim, 'g')
-visualize(MixtureSample, dim, 'r')
+# visualize(Old, dim, 'g')
+# visualize(MixtureSample, dim, 'r')
