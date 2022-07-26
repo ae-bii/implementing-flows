@@ -23,16 +23,7 @@ pi = math.pi
 # Our own norm method because the np.norm was too slow
 def norm(i):
     return np.sqrt(sum(np.square(i)))
-def F0(X):
-    return PotentialFs[0](X)
-def F1(X):
-    return PotentialFs[1](X)
-def F2(X):
-    return PotentialFs[2](X)
-def F3(X):
-    return PotentialFs[3](X)
-def F4(X):
-    return PotentialFs[4](X)
+
 
 # REVISED:
 def BetaNewton(): # Newton's method (Experimental)
@@ -40,8 +31,8 @@ def BetaNewton(): # Newton's method (Experimental)
     ySummationGradient = np.zeros(NumFs)
     G = np.zeros(NumFs)
     for f in range(0,NumFs):
-        xSummationGradient[f] = sum(np.apply_along_axis(FList[f],1,MixtureSample))
-        ySummationGradient[f] = sum(np.apply_along_axis(FList[f],1,CrescentSample))
+        xSummationGradient[f] = sum(np.apply_along_axis(PotentialFs[f],1,MixtureSample))
+        ySummationGradient[f] = sum(np.apply_along_axis(PotentialFs[f],1,CrescentSample))
     for k in range(0, NumFs):
         G[k] = (1/len(MixtureSample)) * xSummationGradient[k] - (1/len(CrescentSample)) * ySummationGradient[k]
     G = np.array(G)
@@ -141,7 +132,7 @@ PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.InverseQuadratic_F(alpha=1, constant=1),
                 functions.InverseMultiquadric_F(alpha=1, constant=1)]
 NumFs = len(PotentialFs)
-FList = [F0,F1,F2,F3,F4]
+
 plt.subplot(1,3,3)
 plt.title("Target")
 plt.scatter(*zip(*CrescentSample), color = 'r', alpha = 0.2)
@@ -194,3 +185,5 @@ plt.xlim(-4, 4)
 plt.ylim(-4, 4)
 plt.show()
 
+end = time.time()
+print(end - start)
