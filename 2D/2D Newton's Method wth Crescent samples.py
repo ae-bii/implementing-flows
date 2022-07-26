@@ -26,19 +26,16 @@ def BetaNewton(): # Newton's method (Experimental)
     xSummationGradient = np.zeros(NumFs)
     ySummationGradient = np.zeros(NumFs)
     G = np.zeros(NumFs)
-    for i in range(0, len(MixtureSample)):
-        for f in range(0,NumFs):
-            xSummationGradient[f] += PotentialFs[f](MixtureSample[i])
-    for j in range(0, len(CrescentSample)):
-        for f in range(0,NumFs):
-            ySummationGradient[f] += PotentialFs[f](CrescentSample[j])
+    for f in range(0,NumFs):
+        xSummationGradient[f] = sum(PotentialFs[f](MixtureSample))
+        ySummationGradient[f] = sum(PotentialFs[f](CrescentSample))
     for k in range(0, NumFs):
         G[k] = (1/len(MixtureSample)) * xSummationGradient[k] - (1/len(CrescentSample)) * ySummationGradient[k]
     G = np.array(G)
     yHessian = np.zeros([NumFs,NumFs])
     for l in range(0, len(CrescentSample)):
         F_gradient = []
-        for f in range(0,NumFs):
+        for f in range(0, NumFs):
             F_gradient.append(nd.Gradient(PotentialFs[f])(CrescentSample[l]))
         for m in range(0, NumFs):
             for n in range(0, NumFs):
