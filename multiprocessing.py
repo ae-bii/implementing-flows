@@ -138,7 +138,7 @@ while True: # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     center = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
     
-    q = multiprocessing.Queue()
+    # q = multiprocessing.Queue()
     if __name__ == '__main__':
         process1 = multiprocessing.Process(target=Beta_1Calculation, args=[q])
         process2 = multiprocessing.Process(target=Beta_2Calculation, args=[q])
