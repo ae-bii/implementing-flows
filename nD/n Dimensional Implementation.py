@@ -11,19 +11,13 @@ np.random.seed(0)
 e = math.e
 pi = math.pi
 
-def distance(z1, z2):
-    sum = 0
-    for i in range(0,len(z1)-1):
-        sum += (z1[i] - z2[i]) ** 2
-    return math.sqrt(sum)
-
 def F_0(z):
-    r = distance(z, center0)
+    r = np.linalg.norm(np.subtract(z, center0))
     alpha = 1.5 # Consistent with the density (As this gets larger, less samples are moved close to 0)
     return r * math.erf(r/alpha) + (alpha/math.sqrt(pi)) * math.pow(e, -(r/alpha) ** 2)
 
 def F_1(z):
-    r = distance(z, center1)
+    r = np.linalg.norm(np.subtract(z, center1))
     alpha = 1.5
     return alpha + r - alpha * math.log(abs(alpha + r))
 
@@ -136,6 +130,7 @@ dim = 3
 
 MixtureSample = MixtureSampleGenerator()
 StandardNormal = StandardNormalGenerator()
+Old = MixtureSample
 
 DValue = 0
 iteration = 0
@@ -146,7 +141,7 @@ while True:
     while TooClose == 1:
         center0 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
         center1 = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
-        if distance(center0, center1) >= 0.75:
+        if np.linalg.norm(np.subtract(center0, center1)) >= 0.75:
             TooClose = 0
     Beta = BetaCalculation()
     OldD = DValue
@@ -154,8 +149,8 @@ while True:
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
     iteration += 1
-    if abs(DValue - OldD) < 0.0001 or iteration > 30:
+    if abs(DValue - OldD) < 0.0001 or iteration > 25:
         break
 
-visualize(StandardNormal, dim, 'g')
-visualize(MixtureSample, dim, 'r')
+# visualize(Old, dim, 'g')
+# visualize(MixtureSample, dim, 'r')
