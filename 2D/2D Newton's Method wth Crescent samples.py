@@ -51,26 +51,23 @@ def BetaNewton(): # Newton's method (Experimental)
     ParameterList = [1, LearningRate/norm(Beta)]
     return Beta * min(ParameterList) # min(ParameterList) can be understood as similar to the "Proportion" in gradient descent
 
-def u(x, Beta):
+def u(x):
     F_eval = []
     for f in range(0,NumFs):
         F_eval.append(PotentialFs[f](x))
     return (((x[0] ** 2) + (x[1] ** 2)) / 2) + np.dot(Beta, F_eval)
 
-def uConjugate(y, Beta):
+def uConjugate(y):
     ConvexCandidate = []
     for i in range(0, len(MixtureSample)):
-        ConjugateValue = np.dot(MixtureSample[i], y) - u(MixtureSample[i], Beta)
+        ConjugateValue = np.dot(MixtureSample[i], y) - u(MixtureSample[i])
         ConvexCandidate.append(ConjugateValue)
     return max(ConvexCandidate)
 
-def D(Beta):
-    xSummation = 0
-    ySummation = 0
-    for i in range(0, len(MixtureSample)):
-        xSummation += u(MixtureSample[i], Beta)
-    for j in range(0, len(CrescentSample)):
-        ySummation += uConjugate(CrescentSample[j], Beta)
+def D():
+
+    xSummation = sum(np.apply_along_axis(u, 1, MixtureSample))
+    ySummation = sum(np.apply_along_axis(uConjugate, 1, CrescentSample))
 
     LL = 1/len(MixtureSample) * xSummation + 1 / \
         len(CrescentSample) * ySummation
@@ -79,16 +76,17 @@ def D(Beta):
 
 def SamplesUpdate(OldMixtureSample):
     NewMixtureSample = []
+    F_eval_x = [0,0,0,0,0]
+    F_eval_y = [0,0,0,0,0]
+    for f in range(0,NumFs):
+        gradient = np.apply_along_axis(nd.Gradient(PotentialFs[f]),1,(OldMixtureSample))
+        F_eval_x[f] = (gradient[:,0])
+        F_eval_y[f] = (gradient[:,1])
+    F_eval_x = np.array(F_eval_x)
+    F_eval_y= np.array(F_eval_y)
     for i in range(0, len(OldMixtureSample)):
-        F_eval_x = np.zeros(NumFs)
-        F_eval_y = np.zeros(NumFs)
-        for f in range(0,NumFs):
-            gradient = nd.Gradient(PotentialFs[f])(OldMixtureSample[i])
-            F_eval_x[f] = gradient[0]
-            F_eval_y[f] = gradient[1]
-
-        xval = OldMixtureSample[i][0] + np.dot(Beta, F_eval_x)
-        yval = OldMixtureSample[i][1] + np.dot(Beta, F_eval_y)
+        xval = OldMixtureSample[i][0] + np.dot(Beta, F_eval_x[:,i])
+        yval = OldMixtureSample[i][1] + np.dot(Beta, F_eval_y[:,i])
         NewMixtureSample.append([xval,yval])
     NewMixtureSample = np.array(NewMixtureSample)
     return NewMixtureSample
@@ -124,7 +122,7 @@ MixtureSample = MixtureSampleGenerator()
 CrescentSample = np.loadtxt("implementing-flows/SampleMoon.csv", delimiter=",")
 CenterGeneratorList = CrescentSample
 
-print(MixtureSample[1])
+
 PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.Gaussian_F(alpha=1, constant=1),
                 functions.Multiquadric_F(alpha=1, constant=1),
@@ -165,7 +163,7 @@ while True: # Maybe there is a problem of overfitting
     OldBeta = Beta
     Beta = BetaNewton()
     OldD = DValue
-    DValue = D(Beta)
+    DValue = D()
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
     if norm(OldBeta - Beta) < 0.0001 or Iteration > 25:
