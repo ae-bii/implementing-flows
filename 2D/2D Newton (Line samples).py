@@ -10,6 +10,7 @@ import matplotlib.animation as animation
 import functions
 import cProfile, pstats
 import time
+import sympy
 
 start = time.time()
 
@@ -32,19 +33,19 @@ def BetaNewton(): # Newton's method (Experimental)
     G = np.zeros(NumFs)
     for f in range(0,NumFs):
         xSummationGradient[f] = sum(np.apply_along_axis(PotentialFs[f],1,MixtureSample))
-        ySummationGradient[f] = sum(np.apply_along_axis(PotentialFs[f],1,CrescentSample))
+        ySummationGradient[f] = sum(np.apply_along_axis(PotentialFs[f],1,LineSample))
     for k in range(0, NumFs):
-        G[k] = (1/len(MixtureSample)) * xSummationGradient[k] - (1/len(CrescentSample)) * ySummationGradient[k]
+        G[k] = (1/len(MixtureSample)) * xSummationGradient[k] - (1/len(LineSample)) * ySummationGradient[k]
     G = np.array(G)
     yHessian = np.zeros([NumFs,NumFs])
     F_gradient = [0,0,0,0,0]
     for f in range(0, NumFs):
-        F_gradient[f] = np.apply_along_axis(nd.Gradient(PotentialFs[f]),1,CrescentSample)
+        F_gradient[f] = np.apply_along_axis(nd.Gradient(PotentialFs[f]),1,LineSample)
     for m in range(0, NumFs):
         for n in range(0, NumFs):
             yHessian[m][n] = sum(np.apply_along_axis(sum,1,F_gradient[m]*F_gradient[n]))
     
-    H = np.multiply(yHessian, 1/len(CrescentSample))
+    H = np.multiply(yHessian, 1/len(LineSample))
     HInverseNeg = (-1) * np.linalg.inv(H)
     Beta = np.matmul(HInverseNeg, G)
     LearningRate = 0.5 # Not sure how to choose this value
@@ -67,10 +68,10 @@ def uConjugate(y):
 def D():
 
     xSummation = sum(np.apply_along_axis(u, 1, MixtureSample))
-    ySummation = sum(np.apply_along_axis(uConjugate, 1, CrescentSample))
+    ySummation = sum(np.apply_along_axis(uConjugate, 1, LineSample))
 
     LL = 1/len(MixtureSample) * xSummation + 1 / \
-        len(CrescentSample) * ySummation
+        len(LineSample) * ySummation
 
     return LL
 
@@ -108,10 +109,10 @@ def MixtureSampleGenerator():
     MixtureSample = np.array(MixtureSample)
     return MixtureSample
 
-def StandardNormalGenerator():
+def LineSampleGenerator():
     Sample = []
-    x = np.random.standard_normal(500)
-    y = np.random.standard_normal(500)
+    x = np.random.uniform(-2,2,500)
+    y = x
     for i in range(500):
         Sample.append([x[i], y[i]])
     return Sample
@@ -119,8 +120,8 @@ def StandardNormalGenerator():
 
 #------------------------------------------------------------------ TESTING (change to heatmap, add animtation)------------------------------------------------------------
 MixtureSample = MixtureSampleGenerator()
-CrescentSample = np.loadtxt("implementing-flows/SampleMoon.csv", delimiter=",")
-CenterGeneratorList = CrescentSample
+LineSample = LineSampleGenerator()
+CenterGeneratorList = LineSample
 
 
 PotentialFs = [functions.Giulio_F(alpha=1),
@@ -130,13 +131,13 @@ PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.InverseMultiquadric_F(alpha=1, constant=1)]
 NumFs = len(PotentialFs)
 
-plt.subplot(1,3,3)
+plt.subplot(1,4,4)
 plt.title("Target")
-plt.scatter(*zip(*CrescentSample), color = 'r', alpha = 0.2)
+plt.scatter(*zip(*LineSample), color = 'r', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-4, 4)
 
-plt.subplot(1,3,1)
+plt.subplot(1,4,1)
 plt.title("Initial")
 plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
 plt.xlim(-4, 4)
@@ -154,7 +155,7 @@ while True: # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     Iteration += 1
     if Iteration >= 10:
-        CenterGeneratorList = MixtureSample + CrescentSample
+        CenterGeneratorList = MixtureSample + LineSample
     CenterList = []
     for i in range(0,NumFs):
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
@@ -175,7 +176,25 @@ while True: # Maybe there is a problem of overfitting
 #stats.dump_stats("newtoncrescent.prof")
 
 
-plt.subplot(1,3,2)
+
+
+Start = sympy.Point(-2,-2)
+End = sympy.Point(2,2)
+Line = sympy.Line(Start, End)
+ProjectedSample = []
+for i in range(0, len(MixtureSample)):
+    PointToProject = sympy.Point(MixtureSample[i][0], MixtureSample[i][1])
+    ProjectedPoint = Line.projection(PointToProject)
+    ProjectedSample.append([ProjectedPoint.x, ProjectedPoint.y])
+
+plt.subplot(1,4,2)
+plt.title("Projection")
+plt.scatter(*zip(*ProjectedSample), color = 'y', alpha = 0.2)
+plt.xlim(-4, 4)
+plt.ylim(-4, 4)
+
+
+plt.subplot(1,4,3)
 plt.title("Optimal Transport")
 plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
 plt.xlim(-4, 4)
