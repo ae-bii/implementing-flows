@@ -61,7 +61,7 @@ x = np.arange(0, 1.1, 0.2)
 y = np.arange(0, 4, 0.2)
 
 X, Y = np.meshgrid(x, y)
-print(Y)
+
 Z1 = 1/4 * (np.vectorize(math.erf)(10 * math.sqrt(2) * (Y - 1)) - np.vectorize(math.erf)(10 * math.sqrt(2) * (Y - 3)))
 
 
