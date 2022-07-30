@@ -53,11 +53,11 @@ def u(x):
 
 def uVectorized(x):
     F_eval = [PotentialFsVectorized[f](x) for f in range(NumFs)]
-    return [((x[i][0] ** 2) + (x[i][1] ** 2))/2 for i in range(len(x))] + np.apply_along_axis(sum,1,np.transpose(F_eval) * Beta)
+    return ((np.square(x[:,0])) + (np.square(x[:,1])))/2 + (np.transpose(F_eval) * Beta).sum(axis = 1)
 
 def uConjugate(y):
-    ConvexCandidate = [(np.dot(MixtureSample[i], y) - u(MixtureSample[i])) for i in range(len(MixtureSample))]
-    return max(ConvexCandidate)
+    ConvexVector = ((MixtureSample * y)[:,0] + (MixtureSample * y)[:,1]) - uVectorized(MixtureSample)
+    return max(ConvexVector)
 
 def D():
 
@@ -79,8 +79,12 @@ def SamplesUpdate(OldMixtureSample):
         F_eval_y[f] = (gradient[:,1])
     F_eval_x = np.array(F_eval_x)
     F_eval_y= np.array(F_eval_y)
-    NewMixtureSample = [[OldMixtureSample[i][0] + np.dot(Beta, F_eval_x[:,i]), OldMixtureSample[i][1] + np.dot(Beta, F_eval_y[:,i])] for i in range(0, len(OldMixtureSample)) ]
-    NewMixtureSample = np.array(NewMixtureSample)
+
+    xVal = OldMixtureSample[:,0] + (np.multiply(np.transpose(F_eval_x), Beta)).sum(axis = 1)
+    yVal = OldMixtureSample[:,1] + (np.multiply(np.transpose(F_eval_y), Beta)).sum(axis = 1)
+    NewMixtureSample = np.array([xVal, yVal])
+    NewMixtureSample = np.transpose(NewMixtureSample)
+
     return NewMixtureSample
 
 def MixtureSampleGenerator():
@@ -144,8 +148,8 @@ Iteration = 0
 Beta = 0
 
 # Profiling code
-#profiler = cProfile.Profile()
-#profiler.enable()
+profiler = cProfile.Profile()
+profiler.enable()
 
 for i in range(25): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
@@ -168,10 +172,10 @@ for i in range(25): # Maybe there is a problem of overfitting
     MixtureSample = SamplesUpdate(MixtureSample)
 
     
-#profiler.disable()
-#stats = pstats.Stats(profiler).sort_stats('tottime')
-#stats.strip_dirs()
-#stats.dump_stats("newtoncrescent.prof")
+profiler.disable()
+stats = pstats.Stats(profiler).sort_stats('tottime')
+stats.strip_dirs()
+stats.dump_stats("newtonvectorized.prof")
 
 
 plt.subplot(1,3,2)
