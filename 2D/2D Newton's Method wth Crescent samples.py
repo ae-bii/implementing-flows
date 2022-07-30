@@ -148,8 +148,8 @@ Iteration = 0
 Beta = 0
 
 # Profiling code
-profiler = cProfile.Profile()
-profiler.enable()
+# profiler = cProfile.Profile()
+# profiler.enable()
 
 for i in range(25): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
@@ -172,10 +172,10 @@ for i in range(25): # Maybe there is a problem of overfitting
     MixtureSample = SamplesUpdate(MixtureSample)
 
     
-profiler.disable()
-stats = pstats.Stats(profiler).sort_stats('tottime')
-stats.strip_dirs()
-stats.dump_stats("newtonvectorized.prof")
+# profiler.disable()
+# stats = pstats.Stats(profiler).sort_stats('tottime')
+# stats.strip_dirs()
+# stats.dump_stats("newtonvectorized.prof")
 
 
 plt.subplot(1,3,2)
