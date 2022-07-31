@@ -30,7 +30,7 @@ def RejectionSampling(Formula):
     PlotPoint = []
     while len(Sample) < 500:
         SampleCandidate = [np.random.uniform(0,1,1), np.random.uniform(-10,10,1)] 
-        CandidateDistance = np.random.uniform(0,5,1) # This is equivalent to randomly choosing a point in this space: 0 < x < 1, -10000 < y < 10000 0 < z < 5
+        CandidateDistance = np.random.uniform(0,5,1) # This is equivalent to randomly choosing a point in this space: 0 < x < 1, -10 < y < 10 0 < z < 5
         if CandidateDistance <= TargetPDF(SampleCandidate):
             Sample.append(SampleCandidate) # Accept the point if it falls under the surface which represents the probability density function
             PlotPoint.append(SampleCandidate + [CandidateDistance])
