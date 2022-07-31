@@ -59,10 +59,14 @@ def uConjugate(y):
     ConvexVector = ((MixtureSample * y)[:,0] + (MixtureSample * y)[:,1]) - uVectorized(MixtureSample)
     return max(ConvexVector)
 
+def uConjugateVec(y):
+    ConvexMatrix = np.array(np.matmul(y, np.transpose(MixtureSample))) - uVectorized(MixtureSample)
+    return ConvexMatrix.max(axis = 1)
+
 def D():
 
     xSummation = sum(uVectorized(MixtureSample))
-    ySummation = sum(np.apply_along_axis(uConjugate, 1, CrescentSample))
+    ySummation = sum(uConjugateVec(CrescentSample))
 
     LL = 1/len(MixtureSample) * xSummation + 1 / \
         len(CrescentSample) * ySummation
@@ -117,7 +121,7 @@ def StandardNormalGenerator():
 MixtureSample = MixtureSampleGenerator()
 CrescentSample = np.loadtxt("implementing-flows/SampleMoon.csv", delimiter=",")
 CenterGeneratorList = CrescentSample
-
+  
 
 PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.Gaussian_F(alpha=1, constant=1),
