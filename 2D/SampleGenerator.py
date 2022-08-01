@@ -18,10 +18,13 @@ def JointDistributionGenerator(): # x is distributed uniformmly and y follows a 
         JointSample.append([x[i],y])
     return JointSample
 
-def IndependentCouplingGenerator():
+def IndependentCouplingGenerator(ResultOnly = True):
     # MarginalX = 1
     MarginalY = lambda xy: 1/4 * (math.erf((5/math.sqrt(2)) * (xy[1] - 1)) - math.erf((5/math.sqrt(2)) * (xy[1] - 3))) # Obtain by integrating their joint density with respect to x
-    return RejectionSampling(MarginalY)
+    if ResultOnly == False:
+        return RejectionSampling(MarginalY)
+    else:
+        return RejectionSampling(MarginalY)[0]
 
 
 def RejectionSampling(Formula):
@@ -37,48 +40,50 @@ def RejectionSampling(Formula):
     PlotPoint = np.array(PlotPoint)
     return [np.array(Sample), PlotPoint]
 
-SampleIndependent = IndependentCouplingGenerator()
-SampleJoint  = JointDistributionGenerator()
+def main():
+    SampleIndependent = IndependentCouplingGenerator(ResultOnly = False)
+    SampleJoint  = JointDistributionGenerator()
 
 
-plt.subplot(1,2,1)
-plt.title("IndependentCoupling")
-plt.scatter(*zip(*SampleIndependent[0]), color = 'b', alpha = 0.2)
-plt.xlim(-2, 6)
-plt.ylim(0, 4)
+    plt.subplot(1,2,1)
+    plt.title("IndependentCoupling")
+    plt.scatter(*zip(*SampleIndependent[0]), color = 'b', alpha = 0.2)
+    plt.xlim(-2, 6)
+    plt.ylim(0, 4)
 
-plt.subplot(1,2,2)
-plt.title("JointDistribution")
-plt.scatter(*zip(*SampleJoint), color = 'r', alpha = 0.2)
-plt.xlim(-2, 2)
-plt.ylim(0, 4)
-plt.show()
-
-
-fig = plt.figure(figsize = (12,10))
-
-x = np.arange(0, 1.1, 0.2)
-y = np.arange(0, 4, 0.2)
-
-X, Y = np.meshgrid(x, y)
-
-Z1 = 1/4 * (np.vectorize(math.erf)(10 * math.sqrt(2) * (Y - 1)) - np.vectorize(math.erf)(10 * math.sqrt(2) * (Y - 3)))
+    plt.subplot(1,2,2)
+    plt.title("JointDistribution")
+    plt.scatter(*zip(*SampleJoint), color = 'r', alpha = 0.2)
+    plt.xlim(-2, 2)
+    plt.ylim(0, 4)
+    plt.show()
 
 
+    fig = plt.figure(figsize = (12,10))
 
+    x = np.arange(0, 1.1, 0.2)
+    y = np.arange(0, 4, 0.2)
 
-PlotPoint = SampleIndependent[1]
+    X, Y = np.meshgrid(x, y)
 
-ax = fig.add_subplot(121, projection='3d')
-ax.scatter(PlotPoint[:,0],PlotPoint[:,1],PlotPoint[:,2])
-ax.plot_surface(X, Y, Z1, cmap = plt.cm.cividis)
-ax.set_xlabel('x', labelpad=20)
-ax.set_ylabel('y', labelpad=20)
-ax.set_zlabel('z', labelpad=20)
-ax.set_title('Independent Coupling Samples')
-
-PlotPoint = SampleJoint[1]
+    Z1 = 1/4 * (np.vectorize(math.erf)(10 * math.sqrt(2) * (Y - 1)) - np.vectorize(math.erf)(10 * math.sqrt(2) * (Y - 3)))
 
 
 
-plt.show() # If most of the points are inside the surface, then Rejection Sampling is successful
+
+    PlotPoint = SampleIndependent[1]
+
+    ax = fig.add_subplot(121, projection='3d')
+    ax.scatter(PlotPoint[:,0],PlotPoint[:,1],PlotPoint[:,2])
+    ax.plot_surface(X, Y, Z1, cmap = plt.cm.cividis)
+    ax.set_xlabel('x', labelpad=20)
+    ax.set_ylabel('y', labelpad=20)
+    ax.set_zlabel('z', labelpad=20)
+    ax.set_title('Independent Coupling Samples')
+
+    PlotPoint = SampleJoint[1]
+
+
+
+    plt.show() # If most of the points are inside the surface, then Rejection Sampling is successful
+
