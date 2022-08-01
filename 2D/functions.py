@@ -144,6 +144,21 @@ class PolyharmonicSpline_F:
         else:
             return np.power(r,self._k+2) / (self._k+2) + self._constant
 
+class PolyharmonicSpline_F_Vectorized:
+    def __init__(self, constant=0, k=0):
+        self._k = k
+        self._constant = constant
+    def setCenter(self, center):
+        self._center = center
+    def __call__(self, z):
+        r = DistanceVec(z, self._center)
+        if self._k % 2 == 0:
+            # Since k and r are positive
+            return (np.multiply(np.power(r,self._k+1), (self._k+2) * np.log(r) - 1)) / ((self._k+2)**2) + self._constant
+        else:
+            return np.power(r,self._k+2) / (self._k+2) + self._constant
+
+
 class ThinPlateSpline_F:
     def __init__(self, constant=0):
         self._constant = constant
@@ -151,4 +166,13 @@ class ThinPlateSpline_F:
         self._center = center
     def __call__(self, z):
         r = distance(z, self._center)
+        return np.power(r,4) * (np.log(r)/4 - 1/16) + self._constant
+
+class ThinPlateSpline_F_Vectorized:
+    def __init__(self, constant=0):
+        self._constant = constant
+    def setCenter(self, center):
+        self._center = center
+    def __call__(self, z):
+        r = DistanceVec(z, self._center)
         return np.power(r,4) * (np.log(r)/4 - 1/16) + self._constant
