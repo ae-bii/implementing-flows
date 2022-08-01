@@ -65,7 +65,7 @@ def u(x, Beta):
 
 def uVectorized(x):
     F_eval = [PotentialFsVectorized[f](x) for f in range(NumFs)]
-    return [np.dot(x[z],x[z]) for z in range(len(x))]/2 + (np.transpose(F_eval) * Beta).sum(axis = 1)
+    return np.array([np.dot(x[z],x[z]) for z in range(len(x))])/2 + (np.transpose(F_eval) * Beta).sum(axis = 1)
 
 def uConjugate(y, Beta):
     temp = Initial * y
@@ -79,16 +79,17 @@ def uConjugateVec(y):
     ConvexMatrix = np.array(np.matmul(y, np.transpose(Initial))) - uVectorized(Initial)
     return ConvexMatrix.max(axis = 1)
 
-def D(Beta):
+def D():
     xSummation = sum(uVectorized(Initial))
     ySummation = sum(uConjugateVec(Target))
 
     LL = 1/len(Initial) * xSummation + 1 / \
         len(Target) * ySummation
+    return LL
 
 def SamplesUpdate(OldMixtureSample):
     NewMixtureSample = []
-    F_eval = []
+    F_eval = [[None] * NumFs for i in range(dim)]
     for f in range(0,NumFs):
         gradient = GradientApprox(OldMixtureSample)[f]
         for i in range(dim):
@@ -112,11 +113,11 @@ def MixtureSampleGenerator():
     mean1, mean2, mean3 = np.array(mean1), np.array(mean2), np.array(mean3)
     cov = np.array([0.5]*dim)
     cov = np.diag(cov**dim)
-    x = np.random.multivariate_normal(mean1, cov, 200)
-    y = np.random.multivariate_normal(mean2, cov, 200)
-    z = np.random.multivariate_normal(mean3, cov, 200)
+    x = np.random.multivariate_normal(mean1, cov, 500)
+    y = np.random.multivariate_normal(mean2, cov, 500)
+    z = np.random.multivariate_normal(mean3, cov, 500)
     MixtureSample = []
-    for i in range(200):
+    for i in range(500):
         RandomSelector = random.random()
         if RandomSelector > 0.7:
             MixtureSample.append(x[i])
@@ -131,8 +132,8 @@ def StandardNormalGenerator():
     Sample = []
     Normals = []
     for i in range(dim):
-        Normals.append(np.random.standard_normal(200))
-    for j in range(200):
+        Normals.append(np.random.standard_normal(500))
+    for j in range(500):
         cur = []
         for k in range(dim):
             cur.append(Normals[k][j])
@@ -161,11 +162,11 @@ PotentialFsVectorized = [functions.Giulio_F_Vectorized(alpha = 1),
                         functions.InverseMultiquadric_F_Vectorized(alpha=1, constant=1)]
 
 fig = plt.figure(figsize=(4,4))
-ax = fig.add_subplot(1, 2, 1, projection='3d')
+ax = fig.add_subplot(1, 3, 3, projection='3d')
 plt.title("Target")
 ax.scatter3D(*zip(*Target), color = 'r', alpha = 0.2)
 
-ax = fig.add_subplot(1, 2, 2, projection='3d')
+ax = fig.add_subplot(1, 3, 1, projection='3d')
 plt.title("Inital")
 ax.scatter3D(*zip(*Initial), color = 'r', alpha = 0.2)
 
@@ -183,7 +184,7 @@ Beta = 0
 
 # start_time = time.time()
 
-for i in range(25): # Maybe there is a problem of overfitting
+for i in range(2500): # Maybe there is a problem of overfitting
     Iteration += 1
     if Iteration >= 10:
         CenterGeneratorList = Initial + Target
@@ -205,6 +206,7 @@ for i in range(25): # Maybe there is a problem of overfitting
 
 # time_convert(end_time-start_time)
 
+ax = fig.add_subplot(1, 3, 2, projection='3d')
 plt.title("Optimal Transport")
 ax.scatter3D(*zip(*Initial), color = 'r', alpha = 0.2)
 
