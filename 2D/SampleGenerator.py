@@ -16,7 +16,7 @@ def JointDistributionGenerator(): # x is distributed uniformmly and y follows a 
     for i in range(0,len(x)):
         y = np.float64((np.random.normal(2 * x[i] + 1, 0.2, 1)))
         JointSample.append([x[i],y])
-    return JointSample
+    return np.array(JointSample)
 
 def IndependentCouplingGenerator(ResultOnly = True):
     # MarginalX = 1
@@ -32,7 +32,7 @@ def RejectionSampling(Formula):
     Sample = []
     PlotPoint = []
     while len(Sample) < 500:
-        SampleCandidate = [np.random.uniform(0,1,1), np.random.uniform(-10,10,1)] 
+        SampleCandidate = [np.float64(np.random.uniform(0,1,1)), np.float64(np.random.uniform(-10,10,1))] 
         CandidateDistance = np.random.uniform(0,5,1) # This is equivalent to randomly choosing a point in this space: 0 < x < 1, -10 < y < 10 0 < z < 5
         if CandidateDistance <= TargetPDF(SampleCandidate):
             Sample.append(SampleCandidate) # Accept the point if it falls under the surface which represents the probability density function
