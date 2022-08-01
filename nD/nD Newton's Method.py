@@ -20,6 +20,8 @@ np.random.seed(0)
 
 e = math.e
 pi = math.pi
+dim = 10
+SampleSize = 1000000
 
 # Our own norm method because the np.norm was too slow
 def norm(i):
@@ -28,10 +30,17 @@ def norm(i):
 def GradientApprox(VariableList):
     Gradient = []
     delta = 1e-8
+    deltaList = []
+    for i in range(dim):
+        deltaList.append([0]*dim)
+    for j in range(dim):
+        deltaList[j][j] = delta/2
+    Gradient = []
     for f in range(NumFs):
-        GradientX = ((PotentialFsVectorized[f](VariableList + [delta/2, 0]) - (PotentialFsVectorized[f](VariableList - [delta/2, 0])))/delta)
-        GradientY = ((PotentialFsVectorized[f](VariableList + [0, delta/2]) - (PotentialFsVectorized[f](VariableList - [0, delta/2])))/delta)
-        Gradient.append(np.squeeze(np.transpose([GradientX, GradientY])))
+        cur = []
+        for k in range(dim):
+            cur.append((PotentialFsVectorized[f](VariableList + deltaList[k]) - (PotentialFsVectorized[f](VariableList - deltaList[k])))/delta)
+        Gradient.append(np.squeeze(np.transpose(cur)))
 
     return Gradient
 
@@ -64,7 +73,12 @@ def u(x):
 
 def uVectorized(x):
     F_eval = [PotentialFsVectorized[f](x) for f in range(NumFs)]
-    return ((np.square(x[:,0])) + (np.square(x[:,1])))/2 + (np.transpose(F_eval) * Beta).sum(axis = 1)
+    sum = [0]*len(x)
+    for i in range(dim):
+        sum[:] += np.square(x[:,i])
+
+
+    return np.array(sum)/2 + (np.transpose(F_eval) * Beta).sum(axis = 1)
 
 def uConjugate(y):
     ConvexVector = ((MixtureSample * y)[:,0] + (MixtureSample * y)[:,1]) - uVectorized(MixtureSample)
@@ -86,34 +100,42 @@ def D():
 
 def SamplesUpdate(OldMixtureSample):
     NewMixtureSample = []
-    F_eval_x = [0,0,0,0,0]
-    F_eval_y = [0,0,0,0,0]
+    F_eval = []
+    [F_eval.append([0,0,0,0,0]) for i in range(dim)]
     for f in range(0,NumFs):
-        gradient = GradientApprox(OldMixtureSample)[f]
-        F_eval_x[f] = (gradient[:,0])
-        F_eval_y[f] = (gradient[:,1])
-    F_eval_x = np.array(F_eval_x)
-    F_eval_y= np.array(F_eval_y)
-
-    xVal = OldMixtureSample[:,0] + (np.multiply(np.transpose(F_eval_x), Beta)).sum(axis = 1)
-    yVal = OldMixtureSample[:,1] + (np.multiply(np.transpose(F_eval_y), Beta)).sum(axis = 1)
-    NewMixtureSample = np.array([xVal, yVal])
+        for j in range(dim):
+            gradient = GradientApprox(OldMixtureSample)[f]
+            F_eval[j][f] = gradient[:,j]
+    vals = []
+    for i in range(dim):
+        curVal = OldMixtureSample[:,i] + (np.multiply(np.transpose(np.array(F_eval[i])), Beta)).sum(axis = 1)
+        vals.append(curVal)
+    NewMixtureSample = np.array(vals)
     NewMixtureSample = np.transpose(NewMixtureSample)
 
     return NewMixtureSample
 
 def MixtureSampleGenerator():
-    mean1 = [1, 2]
-    cov1 = [[0.5, 0], [0, 0.5]]
-    mean2 = [2, 1]
-    cov2 = [[0.5, 0], [0, 0.5]]
-    x = np.random.multivariate_normal(mean1, cov1, 500)
-    y = np.random.multivariate_normal(mean2, cov2, 500)
+    mean1 = []
+    mean2 = []
+    mean3 = []
+    for i in range(dim):
+        mean1.append(random.random()*2)
+        mean2.append(random.random()*2)
+        mean3.append(random.random()*2)
+    mean1, mean2, mean3 = np.array(mean1), np.array(mean2), np.array(mean3)
+    cov = np.array([0.5]*dim)
+    cov = np.diag(cov**dim)
+    x = np.random.multivariate_normal(mean1, cov, SampleSize)
+    y = np.random.multivariate_normal(mean2, cov, SampleSize)
+    z = np.random.multivariate_normal(mean3, cov, SampleSize)
     MixtureSample = []
-    for i in range(500):
+    for i in range(SampleSize):
         RandomSelector = random.random()
         if RandomSelector > 0.7:
             MixtureSample.append(x[i])
+        elif RandomSelector < 0.3:
+            MixtureSample.append(z[i])
         else:
             MixtureSample.append(y[i])
     MixtureSample = np.array(MixtureSample)
@@ -121,16 +143,39 @@ def MixtureSampleGenerator():
 
 def StandardNormalGenerator():
     Sample = []
-    x = np.random.standard_normal(500)
-    y = np.random.standard_normal(500)
-    for i in range(500):
-        Sample.append([x[i], y[i]])
-    return Sample
+    Normals = []
+    for i in range(dim):
+        Normals.append(np.random.standard_normal(200))
+    for j in range(SampleSize):
+        cur = []
+        for k in range(dim):
+            cur.append(Normals[k][j])
+        Sample.append(np.array(cur))
+    return np.array(Sample)
+
+def nCr(n,r):
+    f = math.factorial
+    return f(n) // f(r) // f(n-r)
+
+def visualize(data, dim, col):
+    numVisuals = nCr(dim, 2)
+    k = 1
+    for i in range(dim):
+        for j in range(dim - i - 1):
+            x = int(i+1)
+            y = int(i+j+1)
+            cur = zip([x[i] for x in data], [x[i+j] for x in data])
+            plt.subplot(1, numVisuals, k)
+            plt.title("Cross Section")
+            plt.scatter(*zip(*data),  color = col, alpha = 0.2)
+            k += 1
+    plt.show()
 
 
 #------------------------------------------------------------------ TESTING (change to heatmap, add animtation)------------------------------------------------------------
 MixtureSample = MixtureSampleGenerator()
-CrescentSample = np.loadtxt("implementing-flows/SampleMoon.csv", delimiter=",")
+#CrescentSample = np.loadtxt("C:/Users/Laptop/OneDrive - Grinnell College/Desktop/Research/PolyMath 2022/implementing-flows/SampleMoon.csv", delimiter=",")
+CrescentSample = StandardNormalGenerator()
 CenterGeneratorList = CrescentSample
   
 
@@ -146,34 +191,22 @@ PotentialFsVectorized = [functions.Giulio_F_Vectorized(alpha = 1),
                         functions.InverseQuadratic_F_Vectorized(alpha=1, constant=1),
                         functions.InverseMultiquadric_F_Vectorized(alpha=1, constant=1)]
 
-plt.subplot(1,3,3)
-plt.title("Target")
-plt.scatter(*zip(*CrescentSample), color = 'r', alpha = 0.2)
-plt.xlim(-4, 4)
-plt.ylim(-4, 4)
-
-plt.subplot(1,3,1)
-plt.title("Initial")
-plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
-plt.xlim(-4, 4)
-plt.ylim(-4, 4)
-
 DValue = 0
 Iteration = 0
 Beta = 0
 
 # Profiling code
-profiler = cProfile.Profile()
-profiler.enable()
+#profiler = cProfile.Profile()
+#profiler.enable()
 
-for i in range(2500): # Maybe there is a problem of overfitting
+for i in range(500): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     Iteration += 1
-    if Iteration >= 10:
+    if Iteration >= 300:
         CenterGeneratorList = MixtureSample + CrescentSample
     CenterList = []
-    # DistanceMixture = np.zeros([500,5])
-    # DistanceTarget = np.zeros([500,5])
+    DistanceMixture = np.zeros([SampleSize,5])
+    DistanceTarget = np.zeros([SampleSize,5])
     for i in range(0,NumFs):
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
         CenterList.append(c)
@@ -187,18 +220,12 @@ for i in range(2500): # Maybe there is a problem of overfitting
     MixtureSample = SamplesUpdate(MixtureSample)
 
     
-profiler.disable()
-stats = pstats.Stats(profiler).sort_stats('tottime')
-stats.strip_dirs()
-stats.dump_stats("newtonvectorized.prof")
-
-
-plt.subplot(1,3,2)
-plt.title("Optimal Transport")
-plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
-plt.xlim(-4, 4)
-plt.ylim(-4, 4)
-plt.show()
+# profiler.disable()
+# stats = pstats.Stats(profiler).sort_stats('tottime')
+# stats.strip_dirs()
+# stats.dump_stats("newtonvectorized.prof")
 
 end = time.time()
 print(end - start)
+
+#visualize(MixtureSample, dim, 'r')
