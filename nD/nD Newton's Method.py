@@ -205,7 +205,7 @@ for i in range(500): # Maybe there is a problem of overfitting
     if Iteration >= 300:
         CenterGeneratorList = MixtureSample + CrescentSample
     CenterList = []
-    DistanceMixture = np.zeros([SampleSize],5])
+    DistanceMixture = np.zeros([SampleSize,5])
     DistanceTarget = np.zeros([SampleSize,5])
     for i in range(0,NumFs):
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
