@@ -107,9 +107,9 @@ def MixtureSampleGenerator():
     mean2 = []
     mean3 = []
     for i in range(dim):
-        mean1.append(random.random()*2)
-        mean2.append(random.random()*2)
-        mean3.append(random.random()*2)
+        mean1.append(random.random()*0.25)
+        mean2.append(random.random()*0.25)
+        mean3.append(random.random()*0.25)
     mean1, mean2, mean3 = np.array(mean1), np.array(mean2), np.array(mean3)
     cov = np.array([0.5]*dim)
     cov = np.diag(cov**dim)
@@ -165,10 +165,16 @@ fig = plt.figure(figsize=(4,4))
 ax = fig.add_subplot(1, 3, 3, projection='3d')
 plt.title("Target")
 ax.scatter3D(*zip(*Target), color = 'r', alpha = 0.2)
+ax.set_xlim3d(-2,2)
+ax.set_ylim3d(-2,2)
+ax.set_zlim3d(-2,2)
 
 ax = fig.add_subplot(1, 3, 1, projection='3d')
 plt.title("Inital")
 ax.scatter3D(*zip(*Initial), color = 'r', alpha = 0.2)
+ax.set_xlim3d(-2,2)
+ax.set_ylim3d(-2,2)
+ax.set_zlim3d(-2,2)
 
 DValue = 0
 Iteration = 0
@@ -209,6 +215,10 @@ for i in range(2500): # Maybe there is a problem of overfitting
 ax = fig.add_subplot(1, 3, 2, projection='3d')
 plt.title("Optimal Transport")
 ax.scatter3D(*zip(*Initial), color = 'r', alpha = 0.2)
+ax.set_xlim3d(-2,2)
+ax.set_ylim3d(-2,2)
+ax.set_zlim3d(-2,2)
+
 
 plt.show()
 
