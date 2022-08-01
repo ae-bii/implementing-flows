@@ -166,14 +166,14 @@ Beta = 0
 profiler = cProfile.Profile()
 profiler.enable()
 
-for i in range(25): # Maybe there is a problem of overfitting
+for i in range(2500): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     Iteration += 1
     if Iteration >= 10:
         CenterGeneratorList = MixtureSample + CrescentSample
     CenterList = []
-    DistanceMixture = np.zeros([500,5])
-    DistanceTarget = np.zeros([500,5])
+    # DistanceMixture = np.zeros([500,5])
+    # DistanceTarget = np.zeros([500,5])
     for i in range(0,NumFs):
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
         CenterList.append(c)
