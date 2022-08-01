@@ -146,7 +146,7 @@ dim = 3
 
 # Testing and Plot:
 Initial = MixtureSampleGenerator()
-Target = StandardNormalGenerator()
+Target = np.loadtxt("implementing-flows/3D_moon.csv", delimiter=",")
 CenterGeneratorList = Target
 
 PotentialFs = [functions.Giulio_F(alpha=1),
@@ -193,7 +193,7 @@ Beta = 0
 for i in range(2500): # Maybe there is a problem of overfitting
     Iteration += 1
     if Iteration >= 10:
-        CenterGeneratorList = Initial + Target
+        CenterGeneratorList = np.concatenate((Initial,Target), axis=0)
     CenterList = []
     
     for i in range(0,NumFs):
@@ -218,8 +218,6 @@ ax.scatter3D(*zip(*Initial), color = 'r', alpha = 0.2)
 ax.set_xlim3d(-2,2)
 ax.set_ylim3d(-2,2)
 ax.set_zlim3d(-2,2)
-
-
 plt.show()
 
 
