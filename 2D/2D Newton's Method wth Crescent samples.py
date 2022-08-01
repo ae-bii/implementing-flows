@@ -11,6 +11,7 @@ import functions
 import cProfile, pstats
 import time
 
+
 start = time.time()
 
 
@@ -24,7 +25,17 @@ pi = math.pi
 def norm(i):
     return np.sqrt(sum(np.square(i)))
 
+def GradientApprox(VariableList):
+    Gradient = []
+    delta = 1e-8
+    for f in range(NumFs):
+        GradientX = ((PotentialFsVectorized[f](VariableList + [delta/2, 0]) - (PotentialFsVectorized[f](VariableList - [delta/2, 0])))/delta)
+        GradientY = ((PotentialFsVectorized[f](VariableList + [0, delta/2]) - (PotentialFsVectorized[f](VariableList - [0, delta/2])))/delta)
+        Gradient.append(np.squeeze(np.transpose([GradientX, GradientY])))
 
+    return Gradient
+
+    
 # REVISED:
 def BetaNewton(): # Newton's method (Experimental)
     xSummationGradient = np.zeros(NumFs)
@@ -35,10 +46,10 @@ def BetaNewton(): # Newton's method (Experimental)
     G = [(1/len(MixtureSample)) * xSummationGradient[k] - (1/len(CrescentSample)) * ySummationGradient[k] for k in range(NumFs)]
     G = np.array(G)
     yHessian = np.zeros([NumFs,NumFs])
-    F_gradient = [np.apply_along_axis(nd.Gradient(PotentialFs[f]),1,CrescentSample) for f in range(NumFs)]
+    F_gradient = GradientApprox(CrescentSample)
     for m in range(0, NumFs):
         for n in range(0, NumFs):
-            yHessian[m][n] = sum(np.apply_along_axis(sum,1,F_gradient[m]*F_gradient[n]))
+            yHessian[m][n] = sum((F_gradient[m]*F_gradient[n]).sum(axis = 1))
     
     H = np.multiply(yHessian, 1/len(CrescentSample))
     HInverseNeg = (-1) * np.linalg.inv(H)
@@ -78,7 +89,7 @@ def SamplesUpdate(OldMixtureSample):
     F_eval_x = [0,0,0,0,0]
     F_eval_y = [0,0,0,0,0]
     for f in range(0,NumFs):
-        gradient = np.apply_along_axis(nd.Gradient(PotentialFs[f]),1,(OldMixtureSample))
+        gradient = GradientApprox(OldMixtureSample)[f]
         F_eval_x[f] = (gradient[:,0])
         F_eval_y[f] = (gradient[:,1])
     F_eval_x = np.array(F_eval_x)
@@ -152,8 +163,8 @@ Iteration = 0
 Beta = 0
 
 # Profiling code
-# profiler = cProfile.Profile()
-# profiler.enable()
+profiler = cProfile.Profile()
+profiler.enable()
 
 for i in range(25): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
@@ -176,10 +187,10 @@ for i in range(25): # Maybe there is a problem of overfitting
     MixtureSample = SamplesUpdate(MixtureSample)
 
     
-# profiler.disable()
-# stats = pstats.Stats(profiler).sort_stats('tottime')
-# stats.strip_dirs()
-# stats.dump_stats("newtonvectorized.prof")
+profiler.disable()
+stats = pstats.Stats(profiler).sort_stats('tottime')
+stats.strip_dirs()
+stats.dump_stats("newtonvectorized.prof")
 
 
 plt.subplot(1,3,2)
