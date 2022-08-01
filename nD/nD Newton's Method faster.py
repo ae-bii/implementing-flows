@@ -25,7 +25,17 @@ def norm(i):
     return np.sqrt(sum(np.square(i)))
 
 def GradientApprox(VariableList):
-    return
+    Gradient = []
+    delta = 1e-8
+    for f in range(NumFs):
+        grad = []
+        for i in range(dim):
+            temp = np.zeros(dim)
+            temp[i] = delta/2
+            grad.append(((PotentialFsVectorized[f](VariableList + temp) - (PotentialFsVectorized[f](VariableList - temp)))/delta))
+        Gradient.append(np.squeeze(np.transpose(grad)))
+
+    return Gradient
 
 
 def BetaNewton(): # Newton's method (Experimental)
