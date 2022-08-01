@@ -95,7 +95,6 @@ def SamplesUpdate(OldMixtureSample):
         for i in range(dim):
             F_eval[i][f] = (gradient[:,i])
     F_eval = np.array(F_eval)
-
     vals = [OldMixtureSample[:,i] + (np.multiply(np.transpose(F_eval[i]), Beta)).sum(axis = 1) for i in range(dim)]
     NewMixtureSample = np.array(vals)
     NewMixtureSample = np.transpose(NewMixtureSample)
@@ -113,11 +112,11 @@ def MixtureSampleGenerator():
     mean1, mean2, mean3 = np.array(mean1), np.array(mean2), np.array(mean3)
     cov = np.array([0.5]*dim)
     cov = np.diag(cov**dim)
-    x = np.random.multivariate_normal(mean1, cov, 500)
-    y = np.random.multivariate_normal(mean2, cov, 500)
-    z = np.random.multivariate_normal(mean3, cov, 500)
+    x = np.random.multivariate_normal(mean1, cov, len(Target))
+    y = np.random.multivariate_normal(mean2, cov, len(Target))
+    z = np.random.multivariate_normal(mean3, cov, len(Target))
     MixtureSample = []
-    for i in range(500):
+    for i in range(len(Target)):
         RandomSelector = random.random()
         if RandomSelector > 0.7:
             MixtureSample.append(x[i])
@@ -145,8 +144,8 @@ def StandardNormalGenerator():
 dim = 3
 
 # Testing and Plot:
-Initial = MixtureSampleGenerator()
 Target = np.loadtxt("implementing-flows/3D_moon.csv", delimiter=",")
+Initial = MixtureSampleGenerator()
 CenterGeneratorList = Target
 
 PotentialFs = [functions.Giulio_F(alpha=1),
@@ -154,12 +153,16 @@ PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.Multiquadric_F(alpha=1, constant=1),
                 functions.InverseQuadratic_F(alpha=1, constant=1),
                 functions.InverseMultiquadric_F(alpha=1, constant=1)]
-NumFs = len(PotentialFs)
+
 PotentialFsVectorized = [functions.Giulio_F_Vectorized(alpha = 1),
                         functions.Gaussian_F_Vectorized(alpha=1, constant=1),
                         functions.Multiquadric_F_Vectorized(alpha=1, constant=1),
                         functions.InverseQuadratic_F_Vectorized(alpha=1, constant=1),
-                        functions.InverseMultiquadric_F_Vectorized(alpha=1, constant=1)]
+                        functions.InverseMultiquadric_F_Vectorized(alpha=1, constant=1),
+                        functions.PolyharmonicSpline_F_Vectorized(),
+                        functions.ThinPlateSpline_F_Vectorized()]
+NumFs = len(PotentialFsVectorized)
+
 
 fig = plt.figure(figsize=(4,4))
 ax = fig.add_subplot(1, 3, 3, projection='3d')
@@ -198,9 +201,8 @@ for i in range(2500): # Maybe there is a problem of overfitting
     
     for i in range(0,NumFs):
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
-        CenterList.append(c)
-        PotentialFs[i].setCenter(c)
-        PotentialFsVectorized[i].setCenter(c)
+        CenterList.append(c + 1e-5)
+        PotentialFsVectorized[i].setCenter(c + 1e-5)
     OldBeta = Beta
     Beta = BetaNewton()
     OldD = DValue

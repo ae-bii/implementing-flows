@@ -35,7 +35,10 @@ def distance(z, center):
 
 def DistanceVec(z, center):
     DistanceList = z - center
-    DistanceSquared = np.square(DistanceList[:,0]) + np.square(DistanceList[:,1])
+    dim = np.shape(DistanceList)[1]
+    DistanceSquared = np.zeros(len(DistanceList[:,1]))
+    for i in range(dim):
+        DistanceSquared += np.square(DistanceList[:,i])
     return np.sqrt(DistanceSquared)
 
 
