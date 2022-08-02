@@ -46,17 +46,20 @@ def main():
     SampleJoint  = JointSampleGenerator()
 
 
-    plt.subplot(1,2,1)
-    plt.title("IndependentCoupling")
-    plt.scatter(*zip(*SampleIndependent), color = 'b', alpha = 0.2)
-    plt.xlim(-2, 6)
-    plt.ylim(0, 4)
+    fig = plt.figure(figsize=(4,4))
+    ax = fig.add_subplot(1, 2, 1, projection='3d')
+    plt.title("Independent Coupling")
+    ax.scatter3D(*zip(*SampleIndependent), color = 'r', alpha = 0.2)
+    ax.set_xlim3d(0,8)
+    ax.set_ylim3d(0,8)
+    ax.set_zlim3d(0,8)
 
-    plt.subplot(1,2,2)
-    plt.title("JointDistribution")
-    plt.scatter(*zip(*SampleJoint), color = 'r', alpha = 0.2)
-    plt.xlim(-2, 2)
-    plt.ylim(0, 4)
+    ax = fig.add_subplot(1, 2, 2, projection='3d')
+    plt.title("Joint Distribution")
+    ax.scatter3D(*zip(*SampleJoint), color = 'r', alpha = 0.2)
+    ax.set_xlim3d(0,8)
+    ax.set_ylim3d(0,8)
+    ax.set_zlim3d(0,8)
     plt.show()
 
 
