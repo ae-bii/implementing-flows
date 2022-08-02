@@ -6,11 +6,11 @@ plt.style.use('seaborn-poster')
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import math
-
+import random
 
 pi = math.pi
 e = math.e
-def JointDistributionGenerator(): # x is distributed uniformmly and y follows a normal distribution whose mean is dependent on x
+def JointSampleGenerator(): # x is distributed uniformmly and y follows a normal distribution whose mean is dependent on x
     x = np.random.uniform(0,1,500)
     JointSample = []
     for i in range(0,len(x)):
@@ -18,13 +18,13 @@ def JointDistributionGenerator(): # x is distributed uniformmly and y follows a 
         JointSample.append([x[i],y])
     return np.array(JointSample)
 
-def IndependentCouplingGenerator(ResultOnly = True):
-    # MarginalX = 1
-    MarginalY = lambda xy: 1/4 * (math.erf((5/math.sqrt(2)) * (xy[1] - 1)) - math.erf((5/math.sqrt(2)) * (xy[1] - 3))) # Obtain by integrating their joint density with respect to x
-    if ResultOnly == False:
-        return RejectionSampling(MarginalY)
-    else:
-        return RejectionSampling(MarginalY)[0]
+def IndependentCouplingGenerator():
+    Sample = []
+    x = JointSampleGenerator()[:,0]
+    y = JointSampleGenerator()[:,1]
+    for i in range(0, len(x)):
+        Sample.append([x[i], y[random.randint(0,len(x) - 1)]])
+    return np.array(Sample)
 
 
 def RejectionSampling(Formula):
@@ -38,16 +38,16 @@ def RejectionSampling(Formula):
             Sample.append(SampleCandidate) # Accept the point if it falls under the surface which represents the probability density function
             PlotPoint.append(SampleCandidate + [CandidateDistance])
     PlotPoint = np.array(PlotPoint)
-    return [np.array(Sample), PlotPoint]
+    return np.array(Sample)
 
 def main():
-    SampleIndependent = IndependentCouplingGenerator(ResultOnly = False)
-    SampleJoint  = JointDistributionGenerator()
+    SampleIndependent = IndependentCouplingGenerator()
+    SampleJoint  = JointSampleGenerator()
 
 
     plt.subplot(1,2,1)
     plt.title("IndependentCoupling")
-    plt.scatter(*zip(*SampleIndependent[0]), color = 'b', alpha = 0.2)
+    plt.scatter(*zip(*SampleIndependent), color = 'b', alpha = 0.2)
     plt.xlim(-2, 6)
     plt.ylim(0, 4)
 
@@ -58,32 +58,4 @@ def main():
     plt.ylim(0, 4)
     plt.show()
 
-
-    fig = plt.figure(figsize = (12,10))
-
-    x = np.arange(0, 1.1, 0.2)
-    y = np.arange(0, 4, 0.2)
-
-    X, Y = np.meshgrid(x, y)
-
-    Z1 = 1/4 * (np.vectorize(math.erf)(10 * math.sqrt(2) * (Y - 1)) - np.vectorize(math.erf)(10 * math.sqrt(2) * (Y - 3)))
-
-
-
-
-    PlotPoint = SampleIndependent[1]
-
-    ax = fig.add_subplot(121, projection='3d')
-    ax.scatter(PlotPoint[:,0],PlotPoint[:,1],PlotPoint[:,2])
-    ax.plot_surface(X, Y, Z1, cmap = plt.cm.cividis)
-    ax.set_xlabel('x', labelpad=20)
-    ax.set_ylabel('y', labelpad=20)
-    ax.set_zlabel('z', labelpad=20)
-    ax.set_title('Independent Coupling Samples')
-
-    PlotPoint = SampleJoint[1]
-
-
-
-    plt.show() # If most of the points are inside the surface, then Rejection Sampling is successful
 
