@@ -52,7 +52,7 @@ def BetaNewton(): # Newton's method (Experimental)
     for m in range(0, NumFs):
         for n in range(0, NumFs):
             yHessian[m][n] = sum((F_gradient[m]*F_gradient[n]).sum(axis = 1))
-    
+
     H = np.multiply(yHessian, 1/len(Target))
     HInverseNeg = (-1) * np.linalg.inv(H)
     Beta = np.matmul(HInverseNeg, G)
@@ -145,8 +145,8 @@ def StandardNormalGenerator():
 dim = 3
 
 # Testing and Plot:
-Target = np.loadtxt("implementing-flows/3D_moon.csv", delimiter=",")
-Initial = SampleGeneratorND.IndependentCouplingGenerator(Target, 2500)
+Target = SampleGeneratorND.JointSampleGenerator()
+Initial = SampleGeneratorND.IndependentCouplingGenerator(Target, 1000)
 CenterGeneratorList = Target
 
 PotentialFs = [functions.Giulio_F(alpha=1),
