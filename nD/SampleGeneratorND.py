@@ -4,8 +4,9 @@ from tkinter import Variable
 import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('seaborn-poster')
-import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from mpl_toolkits import mplot3d
+from mpl_toolkits.mplot3d import Axes3D
 import math
 import random
 
@@ -20,12 +21,13 @@ def JointSampleGenerator(): # x is distributed uniformmly and y follows a normal
         JointSample.append([x[i],y,z])
     return np.array(JointSample)
 
-def IndependentCouplingGenerator():
-    dim = len(JointSampleGenerator()[1])
-    Sample = [JointSampleGenerator()[:,i] for i in range(dim)]
-    for j in range(1,dim):
-        random.shuffle(Sample[j])
-    return np.array(np.transpose(Sample))
+def IndependentCouplingGenerator(jointSamples, numsamples):
+    dim = len(jointSamples[0])
+    Samples = []
+    for i in range(dim):
+        r = random.choices(range(0,len(jointSamples)), k=numsamples)
+        Samples.append(jointSamples[r,i])
+    return np.array(np.transpose(Samples))
 
 
 def RejectionSampling(Formula):
@@ -42,10 +44,9 @@ def RejectionSampling(Formula):
     return np.array(Sample)
 
 def main():
-    SampleIndependent = IndependentCouplingGenerator()
-    SampleJoint  = JointSampleGenerator()
-
-
+    SampleJoint  = np.loadtxt("implementing-flows/3D_moon.csv", delimiter=",")
+    SampleIndependent = IndependentCouplingGenerator(SampleJoint, 2500)
+    
     fig = plt.figure(figsize=(4,4))
     ax = fig.add_subplot(1, 2, 1, projection='3d')
     plt.title("Independent Coupling")
@@ -63,3 +64,4 @@ def main():
     plt.show()
 
 
+main()
