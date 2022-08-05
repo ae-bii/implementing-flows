@@ -149,17 +149,19 @@ Target = SampleGeneratorND.JointSampleGenerator()
 Initial = SampleGeneratorND.IndependentCouplingGenerator(Target, 1000)
 CenterGeneratorList = Target
 
-PotentialFs = [functions.Giulio_F(alpha=1),
-                functions.Gaussian_F(alpha=1, constant=1),
-                functions.Multiquadric_F(alpha=1, constant=1),
-                functions.InverseQuadratic_F(alpha=1, constant=1),
-                functions.InverseMultiquadric_F(alpha=1, constant=1)]
+PotentialFs = [functions.Giulio_F(),
+                functions.Gaussian_F(),
+                functions.Multiquadric_F(),
+                functions.InverseQuadratic_F(),
+                functions.InverseMultiquadric_F(),
+                functions.PolyharmonicSpline_F(),
+                functions.ThinPlateSpline_F()]
 
-PotentialFsVectorized = [functions.Giulio_F_Vectorized(alpha = 1),
-                        functions.Gaussian_F_Vectorized(alpha=1, constant=1),
-                        functions.Multiquadric_F_Vectorized(alpha=1, constant=1),
-                        functions.InverseQuadratic_F_Vectorized(alpha=1, constant=1),
-                        functions.InverseMultiquadric_F_Vectorized(alpha=1, constant=1),
+PotentialFsVectorized = [functions.Giulio_F_Vectorized(),
+                        functions.Gaussian_F_Vectorized(),
+                        functions.Multiquadric_F_Vectorized(),
+                        functions.InverseQuadratic_F_Vectorized(),
+                        functions.InverseMultiquadric_F_Vectorized(),
                         functions.PolyharmonicSpline_F_Vectorized(),
                         functions.ThinPlateSpline_F_Vectorized()]
 NumFs = len(PotentialFsVectorized)
