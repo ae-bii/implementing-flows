@@ -11,6 +11,7 @@ import matplotlib.animation as animation
 from mpl_toolkits import mplot3d
 from mpl_toolkits.mplot3d import Axes3D
 import functions
+import SampleGeneratorND
 
 random.seed(0)
 np.random.seed(0)
@@ -145,7 +146,7 @@ dim = 3
 
 # Testing and Plot:
 Target = np.loadtxt("implementing-flows/3D_moon.csv", delimiter=",")
-Initial = MixtureSampleGenerator()
+Initial = SampleGeneratorND.IndependentCouplingGenerator(Target, 10000)
 CenterGeneratorList = Target
 
 PotentialFs = [functions.Giulio_F(alpha=1),
@@ -193,7 +194,7 @@ Beta = 0
 
 # start_time = time.time()
 
-for i in range(2500): # Maybe there is a problem of overfitting
+for i in range(500): # Maybe there is a problem of overfitting
     Iteration += 1
     if Iteration >= 10:
         CenterGeneratorList = np.concatenate((Initial,Target), axis=0)

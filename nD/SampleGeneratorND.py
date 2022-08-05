@@ -62,6 +62,3 @@ def main():
     ax.set_ylim3d(0,8)
     ax.set_zlim3d(0,8)
     plt.show()
-
-
-main()
