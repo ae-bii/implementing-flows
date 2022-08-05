@@ -146,7 +146,7 @@ dim = 3
 
 # Testing and Plot:
 Target = np.loadtxt("implementing-flows/3D_moon.csv", delimiter=",")
-Initial = SampleGeneratorND.IndependentCouplingGenerator(Target, 10000)
+Initial = SampleGeneratorND.IndependentCouplingGenerator(Target, 2500)
 CenterGeneratorList = Target
 
 PotentialFs = [functions.Giulio_F(alpha=1),
