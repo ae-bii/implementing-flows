@@ -210,7 +210,8 @@ for i in range(500): # Maybe there is a problem of overfitting
     Beta = BetaNewton()
     OldD = DValue
     DValue = D()
-    print(DValue)
+    # print(DValue)
+    print(Iteration)
     Initial = SamplesUpdate(Initial)
 
 # end_time = time.time()
