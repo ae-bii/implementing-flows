@@ -52,7 +52,7 @@ def BetaNewton(): # Newton's method (Experimental)
     for m in range(0, NumFs):
         for n in range(0, NumFs):
             yHessian[m][n] = sum((F_gradient[m]*F_gradient[n]).sum(axis = 1))
-    
+
     H = np.multiply(yHessian, 1/len(Target))
     HInverseNeg = (-1) * np.linalg.inv(H)
     Beta = np.matmul(HInverseNeg, G)
@@ -145,21 +145,23 @@ def StandardNormalGenerator():
 dim = 3
 
 # Testing and Plot:
-Target = np.loadtxt("implementing-flows/3D_moon.csv", delimiter=",")
-Initial = SampleGeneratorND.IndependentCouplingGenerator(Target, 10000)
+Target = SampleGeneratorND.JointSampleGenerator()
+Initial = SampleGeneratorND.IndependentCouplingGenerator(Target, 1000)
 CenterGeneratorList = Target
 
-PotentialFs = [functions.Giulio_F(alpha=1),
-                functions.Gaussian_F(alpha=1, constant=1),
-                functions.Multiquadric_F(alpha=1, constant=1),
-                functions.InverseQuadratic_F(alpha=1, constant=1),
-                functions.InverseMultiquadric_F(alpha=1, constant=1)]
+PotentialFs = [functions.Giulio_F(),
+                functions.Gaussian_F(),
+                functions.Multiquadric_F(),
+                functions.InverseQuadratic_F(),
+                functions.InverseMultiquadric_F(),
+                functions.PolyharmonicSpline_F(),
+                functions.ThinPlateSpline_F()]
 
-PotentialFsVectorized = [functions.Giulio_F_Vectorized(alpha = 1),
-                        functions.Gaussian_F_Vectorized(alpha=1, constant=1),
-                        functions.Multiquadric_F_Vectorized(alpha=1, constant=1),
-                        functions.InverseQuadratic_F_Vectorized(alpha=1, constant=1),
-                        functions.InverseMultiquadric_F_Vectorized(alpha=1, constant=1),
+PotentialFsVectorized = [functions.Giulio_F_Vectorized(),
+                        functions.Gaussian_F_Vectorized(),
+                        functions.Multiquadric_F_Vectorized(),
+                        functions.InverseQuadratic_F_Vectorized(),
+                        functions.InverseMultiquadric_F_Vectorized(),
                         functions.PolyharmonicSpline_F_Vectorized(),
                         functions.ThinPlateSpline_F_Vectorized()]
 NumFs = len(PotentialFsVectorized)
@@ -208,7 +210,8 @@ for i in range(500): # Maybe there is a problem of overfitting
     Beta = BetaNewton()
     OldD = DValue
     DValue = D()
-    print(DValue)
+    # print(DValue)
+    print(Iteration)
     Initial = SamplesUpdate(Initial)
 
 # end_time = time.time()
