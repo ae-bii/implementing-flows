@@ -1,3 +1,5 @@
+from re import X
+from socket import create_server
 import sys
 sys.path.append("../implementing-flows")
 
@@ -10,7 +12,7 @@ import matplotlib.animation as animation
 import functions
 import cProfile, pstats
 import time
-
+import SampleGenerator as sg
 
 start = time.time()
 
@@ -129,10 +131,11 @@ def StandardNormalGenerator():
 
 
 #------------------------------------------------------------------ TESTING (change to heatmap, add animtation)------------------------------------------------------------
-MixtureSample = MixtureSampleGenerator()
-CrescentSample = np.loadtxt("implementing-flows/SampleMoon.csv", delimiter=",")
+CrescentSample = sg.JointSampleGenerator()
+MixtureSample = sg.IndependentCouplingGenerator(CrescentSample, len(CrescentSample))
 CenterGeneratorList = CrescentSample
   
+steps = [MixtureSample]
 
 PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.Gaussian_F(alpha=1, constant=1),
@@ -146,17 +149,6 @@ PotentialFsVectorized = [functions.Giulio_F_Vectorized(alpha = 1),
                         functions.InverseQuadratic_F_Vectorized(alpha=1, constant=1),
                         functions.InverseMultiquadric_F_Vectorized(alpha=1, constant=1)]
 
-plt.subplot(1,3,3)
-plt.title("Target")
-plt.scatter(*zip(*CrescentSample), color = 'r', alpha = 0.2)
-plt.xlim(-4, 4)
-plt.ylim(-4, 4)
-
-plt.subplot(1,3,1)
-plt.title("Initial")
-plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
-plt.xlim(-4, 4)
-plt.ylim(-4, 4)
 
 DValue = 0
 Iteration = 0
@@ -166,7 +158,7 @@ Beta = 0
 profiler = cProfile.Profile()
 profiler.enable()
 
-for i in range(2500): # Maybe there is a problem of overfitting
+for i in range(500): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     Iteration += 1
     if Iteration >= 10:
@@ -185,6 +177,7 @@ for i in range(2500): # Maybe there is a problem of overfitting
     DValue = D()
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
+    steps.append(MixtureSample)
 
     
 profiler.disable()
@@ -193,12 +186,22 @@ stats.strip_dirs()
 stats.dump_stats("newtonvectorized.prof")
 
 
-plt.subplot(1,3,2)
-plt.title("Optimal Transport")
-plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
-plt.xlim(-4, 4)
-plt.ylim(-4, 4)
-plt.show()
 
-end = time.time()
-print(end - start)
+fig = plt.figure()
+ax = fig.add_subplot(1,1,1)
+
+xCrescent = CrescentSample[:,0]
+yCrescent = CrescentSample[:,1]
+
+def animate(i):
+    ax.clear()
+    ax.scatter(x=xCrescent,y=yCrescent, color='r', alpha=0.5)
+    xSample = steps[i][:,0]
+    ySample = steps[i][:,1]
+    ax.scatter(x=xSample, y=ySample, color='b', alpha=0.5)
+    plt.xlim([-4,4])
+    plt.ylim([-4,4])
+
+ani = animation.FuncAnimation(fig, animate, interval = 150, repeat = True, frames = len(steps), repeat_delay = 500000)
+plt.show()
+plt.close()
