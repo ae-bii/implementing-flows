@@ -11,20 +11,16 @@ import random
 pi = math.pi
 e = math.e
 def JointSampleGenerator(): # x is distributed uniformmly and y follows a normal distribution whose mean is dependent on x
-    x = np.random.uniform(0,1,500)
-    JointSample = []
-    for i in range(0,len(x)):
-        y = np.float64((np.random.normal(2 * x[i] + 1, 0.2, 1)))
-        JointSample.append([x[i],y])
-    return np.array(JointSample)
+    JointSample = np.loadtxt("implementing-flows\SampleMoon.csv", delimiter=',')
+    return JointSample
 
-def IndependentCouplingGenerator():
-    Sample = []
-    x = JointSampleGenerator()[:,0]
-    y = JointSampleGenerator()[:,1]
-    for i in range(0, len(x)):
-        Sample.append([x[i], y[random.randint(0,len(x) - 1)]])
-    return np.array(Sample)
+def IndependentCouplingGenerator(jointSamples, numsamples):
+    dim = len(jointSamples[0])
+    Samples = []
+    for i in range(dim):
+        r = random.choices(range(0,len(jointSamples)), k=numsamples)
+        Samples.append(jointSamples[r,i])
+    return np.array(np.transpose(Samples))
 
 
 def RejectionSampling(Formula):
