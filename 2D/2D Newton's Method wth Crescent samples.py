@@ -97,8 +97,9 @@ def SamplesUpdate(OldMixtureSample):
     F_eval_x = np.array(F_eval_x)
     F_eval_y= np.array(F_eval_y)
 
-    xVal = OldMixtureSample[:,0] + (np.multiply(np.transpose(F_eval_x), Beta)).sum(axis = 1)
+    xVal = OldMixtureSample[:,0]
     yVal = OldMixtureSample[:,1] + (np.multiply(np.transpose(F_eval_y), Beta)).sum(axis = 1)
+
     NewMixtureSample = np.array([xVal, yVal])
     NewMixtureSample = np.transpose(NewMixtureSample)
 
@@ -144,21 +145,36 @@ PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.InverseMultiquadric_F(alpha=1, constant=1)]
 NumFs = len(PotentialFs)
 PotentialFsVectorized = [functions.Giulio_F_Vectorized(alpha = 1),
-                        functions.Gaussian_F_Vectorized(alpha=1, constant=1),
-                        functions.Multiquadric_F_Vectorized(alpha=1, constant=1),
-                        functions.InverseQuadratic_F_Vectorized(alpha=1, constant=1),
-                        functions.InverseMultiquadric_F_Vectorized(alpha=1, constant=1)]
+                        functions.Gaussian_F_Vectorized(alpha=1, constant=0),
+                        functions.Multiquadric_F_Vectorized(alpha=1, constant=0),
+                        functions.InverseQuadratic_F_Vectorized(alpha=1, constant=0),
+                        functions.InverseMultiquadric_F_Vectorized(alpha=1, constant=0)]
 
 
 DValue = 0
 Iteration = 0
 Beta = 0
 
+plt.rc('axes', titlesize=15) 
+
+plt.subplot(1,3,1)
+plt.title("Initial (Independent Coupling)")
+plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
+plt.xlim(-4, 4)
+plt.ylim(-1, 6)
+CenterList = []
+
+plt.subplot(1,3,3)
+plt.title("Target (Joint Samples)")
+plt.scatter(*zip(*CrescentSample), color = 'r', alpha = 0.2)
+plt.xlim(-4, 4)
+plt.ylim(-1, 6)
+
 # Profiling code
 profiler = cProfile.Profile()
 profiler.enable()
 
-for i in range(500): # Maybe there is a problem of overfitting
+for i in range(2500): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     Iteration += 1
     if Iteration >= 10:
@@ -186,6 +202,12 @@ stats.strip_dirs()
 stats.dump_stats("newtonvectorized.prof")
 
 
+plt.subplot(1,3,2)
+plt.title("Optimal Transport")
+plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
+plt.xlim(-4, 4)
+plt.ylim(-1, 6)
+plt.show()
 
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
@@ -200,7 +222,7 @@ def animate(i):
     ySample = steps[i][:,1]
     ax.scatter(x=xSample, y=ySample, color='b', alpha=0.5)
     plt.xlim([-4,4])
-    plt.ylim([-4,4])
+    plt.ylim([-1,6])
 
 ani = animation.FuncAnimation(fig, animate, interval = 150, repeat = True, frames = len(steps), repeat_delay = 500000)
 plt.show()
