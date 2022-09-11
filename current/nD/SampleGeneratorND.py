@@ -13,13 +13,15 @@ import random
 pi = math.pi
 e = math.e
 def JointSampleGenerator(): # x is distributed uniformmly and y follows a normal distribution whose mean is dependent on x
-    x = np.random.uniform(0,1,500)
+    y = np.random.normal(0,1,500)
     JointSample = []
-    for i in range(0,len(x)):
-        y = np.float64((np.random.normal(2 * x[i] + 1, 2 * x[i] + 1, 1)))
-        z = np.float64((np.random.normal(abs(x[i] + y), abs(x[i] + y), 1)))
-        JointSample.append([x[i],y,z])
-    return np.array(JointSample)
+    for i in range(0,len(y)):
+        x_1 = np.float64((np.random.normal((y[i]) ** 2, 1, 1)))
+        x_2 = np.float64((np.random.normal((y[i]) ** 2, 1, 1)))
+        x_3 = np.float64((np.random.normal((y[i]) ** 2, 1, 1)))
+        JointSample.append([y[i],x_1,x_2,x_3])
+
+    return np.array((JointSample))
 
 def IndependentCouplingGenerator(jointSamples, numsamples):
     dim = len(jointSamples[0])
