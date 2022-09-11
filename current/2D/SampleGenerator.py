@@ -11,7 +11,7 @@ import random
 pi = math.pi
 e = math.e
 def JointSampleGenerator(): # x is distributed uniformmly and y follows a normal distribution whose mean is dependent on x
-    JointSample = np.loadtxt("implementing-flows\SampleMoon.csv", delimiter=',')
+    JointSample = np.loadtxt("current/2D\EllipseMoon.csv", delimiter=',')
     return JointSample
 
 def IndependentCouplingGenerator(jointSamples, numsamples):

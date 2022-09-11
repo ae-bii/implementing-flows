@@ -157,14 +157,14 @@ Beta = 0
 
 plt.rc('axes', titlesize=15) 
 
-plt.subplot(1,3,1)
+plt.subplot(2,3,1)
 plt.title("Initial (Independent Coupling)")
 plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-1, 6)
 CenterList = []
 
-plt.subplot(1,3,3)
+plt.subplot(2,3,6)
 plt.title("Target (Joint Samples)")
 plt.scatter(*zip(*CrescentSample), color = 'r', alpha = 0.2)
 plt.xlim(-4, 4)
@@ -173,8 +173,8 @@ plt.ylim(-1, 6)
 # Profiling code
 profiler = cProfile.Profile()
 profiler.enable()
-
-for i in range(2500): # Maybe there is a problem of overfitting
+SamplesSaved = []
+for i in range(1000): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     Iteration += 1
     if Iteration >= 10:
@@ -182,48 +182,44 @@ for i in range(2500): # Maybe there is a problem of overfitting
     CenterList = []
     # DistanceMixture = np.zeros([500,5])
     # DistanceTarget = np.zeros([500,5])
-    for i in range(0,NumFs):
+    for f in range(0,NumFs):
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
         CenterList.append(c)
-        PotentialFs[i].setCenter(c)
-        PotentialFsVectorized[i].setCenter(c)
+        PotentialFs[f].setCenter(c)
+        PotentialFsVectorized[f].setCenter(c)
     OldBeta = Beta
     Beta = BetaNewton()
     OldD = DValue
     DValue = D()
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
+    if i == 249 or i == 499 or i == 749 or i == 999:
+        SamplesSaved.append(MixtureSample)
     steps.append(MixtureSample)
 
     
-profiler.disable()
-stats = pstats.Stats(profiler).sort_stats('tottime')
-stats.strip_dirs()
-stats.dump_stats("newtonvectorized.prof")
-
-
-plt.subplot(1,3,2)
-plt.title("Optimal Transport")
-plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
+plt.subplot(2,3,2)
+plt.title("Flow Transport (250 iterations)")
+plt.scatter(*zip(*SamplesSaved[0]), color = 'g', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-1, 6)
+
+plt.subplot(2,3,3)
+plt.title("Flow Transport (500 iterations)")
+plt.scatter(*zip(*SamplesSaved[1]), color = 'g', alpha = 0.2)
+plt.xlim(-4, 4)
+plt.ylim(-1, 6)
+
+plt.subplot(2,3,4)
+plt.title("Flow Transport (750 iterations)")
+plt.scatter(*zip(*SamplesSaved[2]), color = 'g', alpha = 0.2)
+plt.xlim(-4, 4)
+plt.ylim(-1, 6)
+
+plt.subplot(2,3,5)
+plt.title("Flow Transport (1000 iterations)")
+plt.scatter(*zip(*SamplesSaved[3]), color = 'g', alpha = 0.2)
+plt.xlim(-4, 4)
+plt.ylim(-1, 6)
+
 plt.show()
-
-fig = plt.figure()
-ax = fig.add_subplot(1,1,1)
-
-xCrescent = CrescentSample[:,0]
-yCrescent = CrescentSample[:,1]
-
-def animate(i):
-    ax.clear()
-    ax.scatter(x=xCrescent,y=yCrescent, color='r', alpha=0.5)
-    xSample = steps[i][:,0]
-    ySample = steps[i][:,1]
-    ax.scatter(x=xSample, y=ySample, color='b', alpha=0.5)
-    plt.xlim([-4,4])
-    plt.ylim([-1,6])
-
-ani = animation.FuncAnimation(fig, animate, interval = 150, repeat = True, frames = len(steps), repeat_delay = 500000)
-plt.show()
-plt.close()

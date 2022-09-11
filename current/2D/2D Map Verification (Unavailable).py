@@ -86,25 +86,23 @@ def D():
 
     return LL
 
-def SamplesUpdate(OldJointSample, Beta):
-    NewJointSample = []
+def SamplesUpdate(OldMixtureSample):
+    NewMixtureSample = []
     F_eval_x = [0,0,0,0,0]
     F_eval_y = [0,0,0,0,0]
     for f in range(0,NumFs):
-        gradient = GradientApprox(OldJointSample)[f]
+        gradient = GradientApprox(OldMixtureSample)[f]
         F_eval_x[f] = (gradient[:,0])
         F_eval_y[f] = (gradient[:,1])
     F_eval_x = np.array(F_eval_x)
     F_eval_y= np.array(F_eval_y)
 
-    xVal = OldJointSample[:,0]
-    yVal = OldJointSample[:,1] + (np.multiply(np.transpose(F_eval_y), Beta)).sum(axis = 1)
+    xVal = OldMixtureSample[:,0]
+    yVal = OldMixtureSample[:,1] + (np.multiply(np.transpose(F_eval_y), Beta)).sum(axis = 1)
 
-    NewJointSample = np.array([xVal, yVal])
-    NewJointSample = np.transpose(NewJointSample)
-
-    return NewJointSample
-
+    NewMixtureSample = np.array([xVal, yVal])
+    NewMixtureSample = np.transpose(NewMixtureSample)
+    return NewMixtureSample
 
 def Verification():
     fig = plt.figure()
@@ -167,10 +165,10 @@ def Verification():
 #        y = np.float64(np.random.normal((x[i]) ** 2, 1, 1))
 #        JointSample.append([x[i], y])
 
-
-IndependentSample = np.random.multivariate_normal([0,0], [[1,0],[0,1]], 500)
 JointSample = sg.JointSampleGenerator()
-CenterGeneratorList = IndependentSample
+IndependentSample = sg.IndependentCouplingGenerator(JointSample,len(JointSample))
+
+CenterGeneratorList = JointSample
 JointSampleSaved = JointSample  
 steps = [JointSample]
 
@@ -192,78 +190,83 @@ Iteration = 0
 Beta = 0
 BetaList = [0]
 # Profiling code
-profiler = cProfile.Profile()
-profiler.enable()
+# profiler = cProfile.Profile()
+# profiler.enable()
 
-plt.subplot(1,4,1)
-plt.title("Initial")
-plt.scatter(*zip(*JointSample), color = 'b', alpha = 0.2)
+plt.rc('axes', titlesize=15) 
+plt.subplot(2,3,1)
+plt.title("Initial (Independent Coupling)")
+plt.scatter(*zip(*IndependentSample), color = 'b', alpha = 0.2)
 plt.xlim(-4, 4)
-plt.ylim(-4, 4)
+plt.ylim(-1, 6)
 CenterList = []
+SamplesSaved = []
 
-for i in range(500): # Maybe there is a problem of overfitting
+plt.subplot(2,3,6)
+plt.title("Target (Joing Samples)")
+plt.scatter(*zip(*JointSample), color = 'r', alpha = 0.2)
+plt.xlim(-4, 4)
+plt.ylim(-1, 6)
+
+for i in range(1000): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     Iteration += 1
     if Iteration >= 10:
-        CenterGeneratorList = JointSample + IndependentSample
+        CenterGeneratorList = IndependentSample + JointSample
+    CenterList = []
     # DistanceMixture = np.zeros([500,5])
     # DistanceTarget = np.zeros([500,5])
-    cList = []
-    for i in range(0,NumFs):
+    for f in range(0,NumFs):
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
-        cList.append(c)
-        PotentialFs[i].setCenter(c)
-        PotentialFsVectorized[i].setCenter(c)
-    CenterList.append(cList)
+        CenterList.append(c)
+        PotentialFs[f].setCenter(c)
+        PotentialFsVectorized[f].setCenter(c)
+    OldBeta = Beta
     Beta = BetaNewton()
-    BetaList.append(Beta)
     OldD = DValue
     DValue = D()
-    JointSample = SamplesUpdate(JointSample, Beta)
-    steps.append(JointSample)
+    print(DValue)
+    IndependentSample = SamplesUpdate(IndependentSample)
+    if i == 249 or i == 499 or i == 749 or i == 999:
+        SamplesSaved.append(IndependentSample)
+    steps.append(IndependentSample)
+        
+
 
 CenterList = np.array(CenterList)
 
 
 
-profiler.disable()
-stats = pstats.Stats(profiler).sort_stats('tottime')
-stats.strip_dirs()
-stats.dump_stats("newtonvectorized.prof")
+# profiler.disable()
+# stats = pstats.Stats(profiler).sort_stats('tottime')
+# stats.strip_dirs()
+# stats.dump_stats("newtonvectorized.prof")
 
 
-plt.subplot(1,4,4)
-plt.title("Target")
-plt.scatter(*zip(*IndependentSample), color = 'r', alpha = 0.2)
+
+plt.subplot(2,3,2)
+plt.title("Flow Transport (500 iterations)")
+plt.scatter(*zip(*SamplesSaved[0]), color = 'g', alpha = 0.2)
 plt.xlim(-4, 4)
-plt.ylim(-4, 4)
+plt.ylim(-1, 6)
 
-StandardMixtureX = JointSampleSaved[:,0]
-StandardMixtureY = []
-for j in range(len(StandardMixtureX)):
-    if JointSampleSaved[j][0] < 0:
-        StandardMixtureY.append(-(JointSampleSaved[j][0]) ** 2 + JointSampleSaved[j][1])
-    else: 
-        StandardMixtureY.append((JointSampleSaved[j][0]) ** 2 + JointSampleSaved[j][1])
-
-StandardMixture = np.transpose([StandardMixtureX, StandardMixtureY])
-
-xCrescent = IndependentSample[:,0]
-yCrescent = IndependentSample[:,1]
-
-
-plt.subplot(1,4,2)
-plt.title("Optimal Transport")
-plt.scatter(*zip(*JointSample), color = 'g', alpha = 0.2)
+plt.subplot(2,3,3)
+plt.title("Flow Transport (1000 iterations)")
+plt.scatter(*zip(*SamplesSaved[1]), color = 'g', alpha = 0.2)
 plt.xlim(-4, 4)
-plt.ylim(-4, 4)
+plt.ylim(-1, 6)
 
-plt.subplot(1,4,3)
-plt.title("Standard Function")
-plt.scatter(*zip(*StandardMixture), color = 'g', alpha = 0.2)
+plt.subplot(2,3,4)
+plt.title("Flow Transport (1500 iterations)")
+plt.scatter(*zip(*SamplesSaved[2]), color = 'g', alpha = 0.2)
 plt.xlim(-4, 4)
-plt.ylim(-4, 4)
-# plt.show()   
+plt.ylim(-1, 6)
 
-Verification()
+plt.subplot(2,3,5)
+plt.title("Flow Transport (2000 iterations)")
+plt.scatter(*zip(*SamplesSaved[3]), color = 'g', alpha = 0.2)
+plt.xlim(-4, 4)
+plt.ylim(-1, 6)
+
+plt.show()
+# Verification()
