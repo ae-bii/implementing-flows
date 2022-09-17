@@ -2,6 +2,7 @@ from re import X
 from socket import create_server
 from statistics import median
 import sys
+
 sys.path.append("../implementing-flows")
 
 import numpy as np
@@ -169,6 +170,7 @@ PotentialFsVectorized = [functions.Giulio_F_Vectorized(alpha = 1),
 DValue = 0
 Iteration = 0
 Beta = 0
+MMDList = []
 
 plt.rc('axes', titlesize=15) 
 
@@ -208,6 +210,11 @@ for i in range(1000): # Maybe there is a problem of overfitting
     DValue = D()
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
+    if i % 5 == 0:
+        Sigma = SigCalculation(MixtureSample, CrescentSample)
+        X = torch.from_numpy(MixtureSample)
+        Y = torch.from_numpy(CrescentSample)
+        MMDList.append((MMDFunctions.mmd(X, Y, Sigma)).numpy())
     if i == 249 or i == 499 or i == 749 or i == 999:
         SamplesSaved.append(MixtureSample)
     steps.append(MixtureSample)
@@ -252,3 +259,13 @@ if MMD < TestValue:
     print("Null hypothesis not rejected, distributions are the same")
 else:
     print("Null hypothesis rejected, distributions failed to be the same")
+
+Step = np.arange(0, len(MMDList), 1)
+Step = np.multiply(Step,5)
+plt.plot(Step,MMDList)
+plt.title("MMD Values vs. Iteration Steps")
+plt.ylabel("MMD Values (Recorded every 5 iterations)")
+plt.xlabel("Iteration Steps")
+
+plt.show(block=True)
+time.sleep(360)

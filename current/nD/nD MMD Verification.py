@@ -1,4 +1,5 @@
 import sys
+from turtle import color
 sys.path.append("./")
 from statistics import median
 import numpy as np
@@ -14,9 +15,10 @@ import functions
 import SampleGeneratorND
 import torch
 import MMDFunctions
-
 random.seed(0)
 np.random.seed(0)
+
+Start = time.time()
 
 e = math.e
 pi = math.pi
@@ -185,6 +187,7 @@ DValue = 0
 Iteration = 0
 Beta = 0
 SamplesSaved = []
+MMDList = []
 # Converts time in seconds to hours, minutes, seconds
 # def time_convert(sec):
 #   mins = sec // 60
@@ -210,12 +213,17 @@ for i in range(1000): # Maybe there is a problem of overfitting
     OldD = DValue
     DValue = D()
     # print(DValue)
+    if i % 5 == 0:
+        Sigma = SigCalculation(Initial, Target)
+        X = torch.from_numpy(Initial)
+        Y = torch.from_numpy(Target)
+        MMDList.append((MMDFunctions.mmd(X, Y, Sigma)).numpy())
     Initial = SamplesUpdate(Initial)
     if i == 249 or i == 499 or i == 749 or i == 999:
         SamplesSaved.append(Initial)
 
-
-
+end = time.time()
+print(end - Start)
 X = torch.from_numpy(SamplesSaved[3])
 Y = torch.from_numpy(Target)
 
@@ -229,3 +237,13 @@ if MMD < TestValue:
     print("Null hypothesis not rejected, distributions are the same")
 else:
     print("Null hypothesis rejected, distributions failed to be the same")
+
+Step = np.arange(0, len(MMDList), 1)
+Step = np.multiply(Step,5)
+plt.plot(Step,MMDList)
+plt.title("MMD Values vs. Iteration Steps")
+plt.ylabel("MMD Values (Recorded every 5 iterations)")
+plt.xlabel("Iteration Steps")
+
+plt.show(block=True)
+time.sleep(360)
