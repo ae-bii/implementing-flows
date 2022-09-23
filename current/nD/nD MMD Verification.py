@@ -94,13 +94,15 @@ def D():
 
 def SamplesUpdate(OldMixtureSample):
     NewMixtureSample = []
+    vals = [OldMixtureSample[:,0]]
     F_eval = [[None] * NumFs for i in range(dim)]
     for f in range(0,NumFs):
         gradient = GradientApprox(OldMixtureSample)[f]
         for i in range(dim):
             F_eval[i][f] = (gradient[:,i])
     F_eval = np.array(F_eval)
-    vals = [OldMixtureSample[:,i] + (np.multiply(np.transpose(F_eval[i]), Beta)).sum(axis = 1) for i in range(dim)]
+    for i in range(1,dim):
+        vals.append(OldMixtureSample[:,i] + (np.multiply(np.transpose(F_eval[i]), Beta)).sum(axis = 1))
     NewMixtureSample = np.array(vals)
     NewMixtureSample = np.transpose(NewMixtureSample)
 
