@@ -57,7 +57,6 @@ def JacobianApprox(VariableList):
     GradientY = lambda func: ((func(VariableList + [0, delta/2]) - (func(VariableList - [0, delta/2])))/delta)
 
     PartialXX = GradientX(xVal)
-    print(PartialXX)
     PartialXY = GradientX(yVal)
     PartialYX = GradientY(xVal)
     PartialYY = GradientY(yVal)
@@ -65,7 +64,7 @@ def JacobianApprox(VariableList):
 
     Jacobian = np.transpose(np.array([PartialXX,PartialXY,PartialYX,PartialYY]))
 
-    return Jacobian
+    return Jacobian.reshape(500,2,2)
 
 
 # REVISED:
@@ -221,5 +220,6 @@ for i in range(1000): # Maybe there is a problem of overfitting
     print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
     print(JacobianApprox(MixtureSample))
+
 
 
