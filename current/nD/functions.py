@@ -200,3 +200,26 @@ class ThinPlateSpline_F_Vectorized:
     def __call__(self, z):
         r = DistanceVec(z, self._center)
         return np.power(r,4) * (np.log(r)/4 - 1/16) + self._constant
+
+class Gaussian_f_partial:
+    def __init__(self, constant=0, alpha=1):
+        self._constant = constant
+        self._alpha = alpha
+    def setCenter(self, center):
+        self._center = center
+    def __call__(self, z, wrt):
+        r = DistanceVec(z, self._center)
+        return np.exp(-self._alpha**2 * np.square(r)) * (z[wrt] - self._center[wrt])
+
+class Gaussian_fgrad_Vectorized:
+    def __init__(self, constant=0, alpha=1):
+        self._constant = constant
+        self._alpha = alpha
+    def setCenter(self, center):
+        self._center = center
+    def __call__(self, z, fnum, wrt):
+        r = DistanceVec(z, self._center)
+        if fnum == wrt:
+            return -2 * (self._alpha)**2 * (z[:,wrt] - self._center[wrt]) ** 2 * np.exp(-self._alpha**2 * np.square(r)) + np.exp(-self._alpha**2 * np.square(r))
+        else:
+            return  -2 * (self._alpha)**2 * (z[:,wrt] - self._center[wrt]) * (z[:,fnum] - self._center[fnum]) * np.exp(-self._alpha**2 * np.square(r))
