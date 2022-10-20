@@ -12,16 +12,20 @@ import random
 
 pi = math.pi
 e = math.e
-def JointSampleGenerator(): # x is distributed uniformmly and y follows a normal distribution whose mean is dependent on x
+def JointSampleGenerator(): # y is distributed normally and x follows a normal distribution whose mean is dependent on y
     y = np.random.normal(0,1,500)
     JointSample = []
     for i in range(0,len(y)):
         x_1 = np.float64((np.random.normal((y[i]) ** 2, 1, 1)))
-        x_2 = np.float64((np.random.normal((y[i]) ** 2, 1, 1)))
-        x_3 = np.float64((np.random.normal((y[i]) ** 2, 1, 1)))
-        JointSample.append([y[i],x_1,x_2,x_3])
+        JointSample.append([y[i],x_1])
 
     return np.array((JointSample))
+
+def JointBananaDensity(y, x):
+    ProbY = (np.exp(-(y ** 2)/2)/(np.sqrt(2 * pi))) 
+    ProbXGivenY = ((np.exp(-(1/2) * ((x - (y ** 2)) ** 2)))/(np.sqrt(2 * pi)))
+    return (np.exp(-(y ** 2)/2)/(np.sqrt(2 * pi))) * ((np.exp(-(1/2) * ((x - (y ** 2)) ** 2)))/(np.sqrt(2 * pi)))
+    
 
 def IndependentCouplingGenerator(jointSamples, numsamples):
     dim = len(jointSamples[0])

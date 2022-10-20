@@ -201,15 +201,6 @@ class ThinPlateSpline_F_Vectorized:
         r = DistanceVec(z, self._center)
         return np.power(r,4) * (np.log(r)/4 - 1/16) + self._constant
 
-class Gaussian_f_partial:
-    def __init__(self, constant=0, alpha=1):
-        self._constant = constant
-        self._alpha = alpha
-    def setCenter(self, center):
-        self._center = center
-    def __call__(self, z, wrt):
-        r = DistanceVec(z, self._center)
-        return np.exp(-self._alpha**2 * np.square(r)) * (z[wrt] - self._center[wrt])
 
 class Gaussian_fgrad_Vectorized:
     def __init__(self, constant=0, alpha=1):
@@ -220,6 +211,31 @@ class Gaussian_fgrad_Vectorized:
     def __call__(self, z, fnum, wrt):
         r = DistanceVec(z, self._center)
         if fnum == wrt:
-            return -2 * (self._alpha)**2 * (z[:,wrt] - self._center[wrt]) ** 2 * np.exp(-self._alpha**2 * np.square(r)) + np.exp(-self._alpha**2 * np.square(r))
+            return np.longdouble(-2 * (self._alpha)**2 * (z[:,wrt] - self._center[wrt]) ** 2 * np.exp(-self._alpha**2 * np.square(r)) + np.exp(-self._alpha**2 * np.square(r)))
         else:
-            return  -2 * (self._alpha)**2 * (z[:,wrt] - self._center[wrt]) * (z[:,fnum] - self._center[fnum]) * np.exp(-self._alpha**2 * np.square(r))
+            return  np.longdouble(-2 * (self._alpha)**2 * (z[:,wrt] - self._center[wrt]) * (z[:,fnum] - self._center[fnum]) * np.exp(-self._alpha**2 * np.square(r)))
+
+class Giulio_fgrad_alpha_is_1: # The expresion of this function may not be correct. 
+    def __init__(self, alpha=1):
+        self._alpha = alpha
+    def setCenter(self, center):
+        self._center = center
+    def __call__(self, z, fnum, wrt):
+        r = DistanceVec(z, self._center)
+        if fnum == wrt:
+            return np.longdouble((2 * z[:,wrt] * np.exp(-(r ** 2)))/(np.sqrt(pi) * (r ** 2))) - np.multiply((-(r ** 2) + (z[:,wrt] ** 2)), (erf(r)/(r ** 3)))
+        else:
+            return np.longdouble(np.multiply((np.multiply(z[:,fnum], z[:,wrt])), ((2 * np.exp(-(r ** 2)))/((np.sqrt(pi) * (r ** 2)) - erf(r)/(r ** 3))))) 
+    
+class InverseQuadratic_fgrad_alpha_is_1:
+    def __init__(self, alpha = 1, constant=0):
+        self._alpha = alpha
+        self._constant = constant
+    def setCenter(self, center):
+        self._center = center
+    def __call__(self, z, fnum, wrt):
+        r = DistanceVec(z, self._center)
+        if fnum == wrt:
+            return np.longdouble(-((-(r ** 2) + (2 * z[:,wrt]) - 1)/(((r ** 2) + 1) ** 2)))
+        else:
+            return np.longdouble(-((2 * np.multiply(z[:,fnum], z[:,wrt]))/(((r ** 2) + 1) ** 2)))    

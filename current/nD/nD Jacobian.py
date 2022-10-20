@@ -39,7 +39,7 @@ def GradientApprox(VariableList):
         for i in range(dim):
             temp = np.zeros(dim)
             temp[i] = delta/2
-            grad.append(((PotentialFsVectorized[f](VariableList + temp) - (PotentialFsVectorized[f](VariableList - temp)))/delta))
+            grad.append(np.longdouble((PotentialFsVectorized[f](VariableList + temp) - (PotentialFsVectorized[f](VariableList - temp)))/delta))
         Gradient.append(np.squeeze(np.transpose(grad)))
 
     return Gradient
@@ -50,15 +50,15 @@ def JacobianAnalytical(VariableList):
     
     for m in range(dim):
         for n in range(dim):
-            for f in range(NumFs):
                 if m == n:
-                    Partials.append(1 + Beta * PotentialPartialVectorized[f](VariableList, fnum=m,wrt=n))
+                    Partials.append(np.longdouble(1 + sum([Beta[f] * PotentialPartialVectorized[f](VariableList, fnum=m,wrt=n) for f in range(NumFs)])))
                 else: 
-                    Partials.append(Beta * PotentialPartialVectorized[f](VariableList, fnum=m,wrt=n))
+                    Partials.append(np.longdouble(sum([Beta[f] * PotentialPartialVectorized[f](VariableList, fnum=m,wrt=n) for f in range(NumFs)])))
     Jacobian = np.transpose(np.array(Partials))
     Jacobian = Jacobian.reshape(len(Initial),dim,dim) 
     for i in range(len(Initial)):
-        Jacobian[i][:,0] = [1,0,0,0]
+        Jacobian[i][:,0] = np.array(([1] + [0 for l in range(dim - 1)]),dtype=np.longdouble)
+
     return Jacobian
     
 
@@ -66,7 +66,7 @@ def JacobianAnalytical(VariableList):
 
 def JacobianApprox(VariableList):
 
-    delta = 1e-4
+    delta = 1e-3
     def Vals(VariableList, DimNeeded):
         NewMixtureSample = []
         vals = [VariableList[:,0]]
@@ -78,7 +78,7 @@ def JacobianApprox(VariableList):
         F_eval = np.array(F_eval)
         for i in range(1,dim):
             vals.append(VariableList[:,i] + (np.multiply(np.transpose(F_eval[i]), Beta)).sum(axis = 1))
-        NewMixtureSample = np.array(vals)
+        NewMixtureSample = np.array(vals, dtype=np.longdouble)
         return NewMixtureSample[DimNeeded]
         
     def PartialGradient(func, DimNeeded, funcPara):
@@ -114,9 +114,8 @@ def BetaNewton(): # Newton's method (Experimental)
     H = np.multiply(yHessian, 1/len(Target))
     HInverseNeg = (-1) * np.linalg.inv(H)
     Beta = np.matmul(HInverseNeg, G)
-    LearningRate = 0.5 # Not sure how to choose this value
-    ParameterList = [1, LearningRate/norm(Beta)]
-    return Beta * min(ParameterList)
+    LearningRate = 5 # Not sure how to choose this value
+    return Beta/norm(Beta) * LearningRate 
 
 def u(x, Beta):
     F_eval = [(PotentialFs[f](x)) for f in range(NumFs)]
@@ -209,9 +208,38 @@ def SigCalculation(X,Y):
 
     return median(DistList)
 
+def JacobianApproxTest(VariableList,delta): # Temporary function used to test Jacobian
+    def Vals(VariableList, DimNeeded):
+        NewMixtureSample = []
+        vals = [VariableList[:,0]]
+        F_eval = [[None] * NumFs for i in range(dim)]
+        for f in range(0,NumFs):
+            gradient = GradientApprox(VariableList)[f]
+            for i in range(dim):
+                F_eval[i][f] = (gradient[:,i])
+        F_eval = np.array(F_eval)
+        for i in range(1,dim):
+            vals.append(VariableList[:,i] + (np.multiply(np.transpose(F_eval[i]), Beta)).sum(axis = 1))
+        NewMixtureSample = np.array(vals, dtype=np.longdouble)
+        return NewMixtureSample[DimNeeded]
+        
+    def PartialGradient(func, DimNeeded, funcPara):
+        DeltaVector = [0 for i in range(dim)]
+        DeltaVector[DimNeeded] += delta
+        return (np.longdouble(func((VariableList + DeltaVector), funcPara) - (func((VariableList - DeltaVector), funcPara)))/(2 * delta))
+
+    Partials = []
+
+    for m in range(dim):
+        for n in range(dim):
+            Partials.append(PartialGradient(Vals, m, n))
+
+    Jacobian = np.transpose(np.array(Partials))
+
+    return Jacobian.reshape(len(Initial),dim,dim)
 
 #------------------------------------------------------------------ TESTING ------------------------------------------------------------
-dim = 4
+dim = 2
 
 # Testing and Plot:
 Target = SampleGeneratorND.JointSampleGenerator()
@@ -228,12 +256,16 @@ PotentialFs = [functions.Giulio_F(),
                 functions.PolyharmonicSpline_F(),
                 functions.ThinPlateSpline_F()]
 
-PotentialFsVectorized = [functions.Gaussian_F_Vectorized()]
-PotentialPartialVectorized = [functions.Gaussian_fgrad_Vectorized()]
+PotentialFsVectorized = [functions.Gaussian_F_Vectorized(),
+                         functions.InverseQuadratic_F_Vectorized()]
+PotentialPartialVectorized = [functions.Gaussian_fgrad_Vectorized(),
+                              functions.InverseQuadratic_fgrad_alpha_is_1()]
 NumFs = len(PotentialFsVectorized)
 
-
-
+check = 0
+DeltaList = [0.000001,0.00001,0.0001,0.001,0.01,0.1,1,10,100]
+RandomPoint = random.randint(0,500)
+ErrorList = []
 
 DValue = 0
 Iteration = 0
@@ -265,9 +297,14 @@ for i in range(250): # Maybe there is a problem of overfitting
     Beta = BetaNewton()
     OldD = DValue
     DValue = D()
+    if i == 75:
+        print((JacobianAnalytical(Initial)[10]), (JacobianApproxTest(Initial, np.longdouble(0.001))[10]))
+    if np.allclose(np.linalg.det(JacobianAnalytical(Initial)),np.linalg.det(JacobianApproxTest(Initial, 0.001)),atol=0.1) == True:
+        check += 1
     # print(DValue)
     Initial = SamplesUpdate(Initial)
 
-    print(np.allclose(JacobianAnalytical(Initial),JacobianApprox(Initial),atol=0.0001))
-    # If "True" is printed, then it means the difference between the value of JacobianAnalytical and JacobianApprox is less than atol.
 
+
+
+print(check) # If "True" is printed, then it means the difference between the value of JacobianAnalytical and JacobianApprox is less than atol.
