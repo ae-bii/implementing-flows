@@ -1,4 +1,5 @@
-from ast import Num
+from ast import Del, Num
+from msilib.schema import Error
 import sys
 from turtle import color
 
@@ -114,7 +115,7 @@ def BetaNewton(): # Newton's method (Experimental)
     H = np.multiply(yHessian, 1/len(Target))
     HInverseNeg = (-1) * np.linalg.inv(H)
     Beta = np.matmul(HInverseNeg, G)
-    LearningRate = 5 # Not sure how to choose this value
+    LearningRate = 1 # Not sure how to choose this value
     return Beta/norm(Beta) * LearningRate 
 
 def u(x, Beta):
@@ -246,7 +247,7 @@ Target = SampleGeneratorND.JointSampleGenerator()
 Initial = SampleGeneratorND.IndependentCouplingGenerator(Target, len(Target))
 CenterGeneratorList = Target
 
-
+InitialSaved = Initial
 
 PotentialFs = [functions.Giulio_F(),
                 functions.Gaussian_F(),
@@ -262,10 +263,7 @@ PotentialPartialVectorized = [functions.Gaussian_fgrad_Vectorized(),
                               functions.InverseQuadratic_fgrad_alpha_is_1()]
 NumFs = len(PotentialFsVectorized)
 
-check = 0
-DeltaList = [0.000001,0.00001,0.0001,0.001,0.01,0.1,1,10,100]
-RandomPoint = random.randint(0,500)
-ErrorList = []
+Jacobian = 1
 
 DValue = 0
 Iteration = 0
@@ -297,14 +295,25 @@ for i in range(250): # Maybe there is a problem of overfitting
     Beta = BetaNewton()
     OldD = DValue
     DValue = D()
-    if i == 75:
-        print((JacobianAnalytical(Initial)[10]), (JacobianApproxTest(Initial, np.longdouble(0.001))[10]))
-    if np.allclose(np.linalg.det(JacobianAnalytical(Initial)),np.linalg.det(JacobianApproxTest(Initial, 0.001)),atol=0.1) == True:
-        check += 1
-    # print(DValue)
+    Jacobian = Jacobian * JacobianAnalytical(Initial)
     Initial = SamplesUpdate(Initial)
 
+JacDeterminant = np.linalg.det(Jacobian)
 
+fig = plt.figure()
 
+x = InitialSaved[:,0]
+y = InitialSaved[:,1]
 
-print(check) # If "True" is printed, then it means the difference between the value of JacobianAnalytical and JacobianApprox is less than atol.
+gridX, gridY = np.meshgrid(x,y)
+
+def density(x,y):
+    return (np.exp(-(y ** 2)/2)/(np.sqrt(2 * pi))) * ((np.exp(-(1/2) * ((x - (y ** 2)) ** 2)))/(np.sqrt(2 * pi)))
+
+plt.xlim(-10,10)
+plt.ylim(-10,10)
+
+ContourPlot = plt.contour(gridX,gridY,density(gridX,gridY))
+plt.colorbar(ContourPlot)
+plt.show()
+
