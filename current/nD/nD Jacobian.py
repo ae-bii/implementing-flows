@@ -18,6 +18,8 @@ import functions
 import SampleGeneratorND
 import torch
 import MMDFunctions
+import sympy as sp
+
 random.seed(0)
 np.random.seed(0)
 
@@ -263,7 +265,7 @@ PotentialPartialVectorized = [functions.Gaussian_fgrad_Vectorized(),
                               functions.InverseQuadratic_fgrad_alpha_is_1()]
 NumFs = len(PotentialFsVectorized)
 
-Jacobian = 1
+Jacobian = [[[1,0],[0,1]] for k in range(len(Initial))]
 
 DValue = 0
 Iteration = 0
@@ -295,25 +297,36 @@ for i in range(250): # Maybe there is a problem of overfitting
     Beta = BetaNewton()
     OldD = DValue
     DValue = D()
-    Jacobian = Jacobian * JacobianAnalytical(Initial)
+    Jacobian = np.matmul(JacobianAnalytical(Initial), Jacobian)
     Initial = SamplesUpdate(Initial)
 
 JacDeterminant = np.linalg.det(Jacobian)
 
-fig = plt.figure()
 
-x = InitialSaved[:,0]
-y = InitialSaved[:,1]
+xVal = InitialSaved[:,0]
+yVal = InitialSaved[:,1]
+z = []
 
-gridX, gridY = np.meshgrid(x,y)
+x,y = sp.symbols("x y")
+MarginalX = sp.integrate((sp.exp(-(y ** 2)/2)/(sp.sqrt(2 * pi))) * ((sp.exp(-(1/2) * ((x - (y ** 2)) ** 2)))/(sp.sqrt(2 * pi))),(x,-sp.oo,sp.oo))
+MarginalY = sp.integrate((sp.exp(-(y ** 2)/2)/(sp.sqrt(2 * pi))) * ((sp.exp(-(1/2) * ((x - (y ** 2)) ** 2)))/(sp.sqrt(2 * pi))),(y,-sp.oo,sp.oo))
 
-def density(x,y):
-    return (np.exp(-(y ** 2)/2)/(np.sqrt(2 * pi))) * ((np.exp(-(1/2) * ((x - (y ** 2)) ** 2)))/(np.sqrt(2 * pi)))
 
-plt.xlim(-10,10)
-plt.ylim(-10,10)
 
-ContourPlot = plt.contour(gridX,gridY,density(gridX,gridY))
-plt.colorbar(ContourPlot)
+test = 0
+for i in range(len(xVal)):
+    z.append(MarginalX.evalf(subs={x:xVal[i],y:yVal[i]}) * MarginalY.evalf(subs={x:xVal[i],y:yVal[i]}))
+    test += 1
+    print(test)
+z = np.divide(z,JacDeterminant)
+z = np.array(z,dtype="float64")
+level = np.linspace(0,0.5,5)
+z2 = SampleGeneratorND.JointBananaDensity(Initial[:,0],Initial[:,1])
+
+fig,axs = plt.subplots(1,2)
+ax0 = axs[0].tricontour(xVal,yVal,z)
+ax1 = axs[1].tricontour(Initial[:,0],Initial[:,1],z2)
+plt.colorbar(ax0)
+plt.colorbar(ax1)
 plt.show()
 

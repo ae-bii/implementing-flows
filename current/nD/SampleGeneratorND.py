@@ -9,6 +9,7 @@ from mpl_toolkits import mplot3d
 from mpl_toolkits.mplot3d import Axes3D
 import math
 import random
+import sympy as sp
 
 pi = math.pi
 e = math.e
@@ -24,8 +25,7 @@ def JointSampleGenerator(): # y is distributed normally and x follows a normal d
 def JointBananaDensity(y, x):
     ProbY = (np.exp(-(y ** 2)/2)/(np.sqrt(2 * pi))) 
     ProbXGivenY = ((np.exp(-(1/2) * ((x - (y ** 2)) ** 2)))/(np.sqrt(2 * pi)))
-    return (np.exp(-(y ** 2)/2)/(np.sqrt(2 * pi))) * ((np.exp(-(1/2) * ((x - (y ** 2)) ** 2)))/(np.sqrt(2 * pi)))
-    
+    return (np.exp(-np.square(y)/2)/(np.sqrt(2 * pi))) * ((np.exp(-(1/2) * (np.square(x - np.square(y)))))/(np.sqrt(2 * pi)))
 
 def IndependentCouplingGenerator(jointSamples, numsamples):
     dim = len(jointSamples[0])
