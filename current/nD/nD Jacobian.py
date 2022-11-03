@@ -118,7 +118,7 @@ def BetaNewton(): # Newton's method (Experimental)
     HInverseNeg = (-1) * np.linalg.inv(H)
     Beta = np.matmul(HInverseNeg, G)
     LearningRate = 1 # Not sure how to choose this value
-    return Beta/norm(Beta) * LearningRate 
+    return Beta/norm(Beta) * LearningRate
 
 def u(x, Beta):
     F_eval = [(PotentialFs[f](x)) for f in range(NumFs)]
@@ -272,6 +272,8 @@ Iteration = 0
 Beta = 0
 SamplesSaved = []
 MMDList = []
+DistCenter = []
+JacDetList = []
 # Converts time in seconds to hours, minutes, seconds
 # def time_convert(sec):
 #   mins = sec // 60
@@ -289,19 +291,51 @@ for i in range(250): # Maybe there is a problem of overfitting
     CenterList = []
     
     for f in range(0,NumFs):
+        DistFlag = False
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
+        while f > 0 and DistFlag == False:
+            if all([functions.distance(c,CenterList[k]) >= 2 for k in range(0,f)])== True:
+                DistFlag = True
+            else:
+                c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
+
         CenterList.append(c)
         PotentialFsVectorized[f].setCenter(c)
         PotentialPartialVectorized[f].setCenter(c)
+
+    if i > 0:
+        DistCenter.append([functions.DistanceVec(np.array(CenterList), np.array(PreviousCenterList))])
+
+    PreviousCenterList = CenterList
+
     OldBeta = Beta
     Beta = BetaNewton()
     OldD = DValue
     DValue = D()
     Jacobian = np.matmul(JacobianAnalytical(Initial), Jacobian)
+    JacDetList.append(min(np.absolute(np.linalg.det(Jacobian))))
     Initial = SamplesUpdate(Initial)
 
 JacDeterminant = np.linalg.det(Jacobian)
 
+DistCenter = np.squeeze(np.array(DistCenter))
+
+
+# Determinant Plot (Minumum absolutue value)
+TimeStep = np.linspace(0,249,250)
+plt.plot(TimeStep,JacDetList)
+plt.title("Determinant (Minimum absolute value) at each time step")
+plt.show()
+
+
+# Distance between centers plot
+TimeStep = np.linspace(1,249,249)
+for i in range(NumFs):
+    plt.plot(TimeStep, DistCenter[:,i], label = "Center" + str(i))
+plt.title("Distances between centers at different time step")
+
+plt.legend()
+plt.show()
 
 xVal = InitialSaved[:,0]
 yVal = InitialSaved[:,1]
