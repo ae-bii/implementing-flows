@@ -31,8 +31,8 @@ def GradientApprox(VariableList):
     Gradient = []
     delta = 1e-8
     for f in range(NumFs):
-        GradientX = ((PotentialFsVectorized[f](VariableList + [delta/2, 0]) - (PotentialFsVectorized[f](VariableList - [delta/2, 0])))/delta)
-        GradientY = ((PotentialFsVectorized[f](VariableList + [0, delta/2]) - (PotentialFsVectorized[f](VariableList - [0, delta/2])))/delta)
+        GradientX = PotentialGradVectorized[f](VariableList,wrt=0)
+        GradientY = PotentialGradVectorized[f](VariableList,wrt=1)
         Gradient.append(np.squeeze(np.transpose([GradientX, GradientY])))
 
     return Gradient
@@ -42,20 +42,20 @@ def GradientApprox(VariableList):
 def BetaNewton(): # Newton's method (Experimental)
     xSummationGradient = np.zeros(NumFs)
     ySummationGradient = np.zeros(NumFs)
-    G = np.zeros(NumFs)
+    GVec = np.zeros(NumFs)
     xSummationGradient = [sum(PotentialFsVectorized[f](MixtureSample)) for f in range(NumFs)]
     ySummationGradient = [sum(PotentialFsVectorized[f](CrescentSample)) for f in range(NumFs)]
-    G = [(1/len(MixtureSample)) * xSummationGradient[k] - (1/len(CrescentSample)) * ySummationGradient[k] for k in range(NumFs)]
-    G = np.array(G)
+    GVec = [(1/len(MixtureSample)) * xSummationGradient[k] - (1/len(CrescentSample)) * ySummationGradient[k] for k in range(NumFs)]
+    GVec = np.array(GVec)
     yHessian = np.zeros([NumFs,NumFs])
     F_gradient = GradientApprox(CrescentSample)
     for m in range(0, NumFs):
         for n in range(0, NumFs):
             yHessian[m][n] = sum((F_gradient[m]*F_gradient[n]).sum(axis = 1))
     
-    H = np.multiply(yHessian, 1/len(CrescentSample))
-    HInverseNeg = (-1) * np.linalg.inv(H)
-    Beta = np.matmul(HInverseNeg, G)
+    HMat = (1/len(CrescentSample)) * yHessian
+    HInverseNeg = (-1) * np.linalg.inv(HMat)
+    Beta = np.dot(HInverseNeg, GVec)
     LearningRate = 0.5 # Not sure how to choose this value
     ParameterList = [1, LearningRate/norm(Beta)]
     return Beta * min(ParameterList) # min(ParameterList) can be understood as similar to the "Proportion" in gradient descent
@@ -88,8 +88,8 @@ def D():
 
 def SamplesUpdate(OldMixtureSample):
     NewMixtureSample = []
-    F_eval_x = [0,0,0,0,0]
-    F_eval_y = [0,0,0,0,0]
+    F_eval_x = [0,0]
+    F_eval_y = [0,0]
     for f in range(0,NumFs):
         gradient = GradientApprox(OldMixtureSample)[f]
         F_eval_x[f] = (gradient[:,0])
@@ -143,13 +143,16 @@ PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.Multiquadric_F(alpha=1, constant=1),
                 functions.InverseQuadratic_F(alpha=1, constant=1),
                 functions.InverseMultiquadric_F(alpha=1, constant=1)]
-NumFs = len(PotentialFs)
-PotentialFsVectorized = [functions.Giulio_F_Vectorized(alpha = 1),
-                        functions.Gaussian_F_Vectorized(alpha=1, constant=0),
-                        functions.Multiquadric_F_Vectorized(alpha=1, constant=0),
-                        functions.InverseQuadratic_F_Vectorized(alpha=1, constant=0),
-                        functions.InverseMultiquadric_F_Vectorized(alpha=1, constant=0)]
 
+PotentialFsVectorized = [
+                        functions.Gaussian_F_Vectorized(alpha=1.5, constant=0),
+                        functions.InverseQuadratic_F_Vectorized(alpha=1.5, constant=0)]
+
+PotentialGradVectorized = [
+                          functions.Gaussian_fgrad_Vectorized(alpha=1.5, constant=0),
+                          functions.InverseQuadratic_fgrad_Vectorized(alpha=1.5, constant=0)]
+
+NumFs = len(PotentialFsVectorized)
 
 DValue = 0
 Iteration = 0
@@ -157,14 +160,14 @@ Beta = 0
 
 plt.rc('axes', titlesize=15) 
 
-plt.subplot(2,3,1)
+plt.subplot(1,3,1)
 plt.title("Initial (Independent Coupling)")
 plt.scatter(*zip(*MixtureSample), color = 'b', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-1, 6)
 CenterList = []
 
-plt.subplot(2,3,6)
+plt.subplot(1,3,3)
 plt.title("Target (Joint Samples)")
 plt.scatter(*zip(*CrescentSample), color = 'r', alpha = 0.2)
 plt.xlim(-4, 4)
@@ -174,51 +177,35 @@ plt.ylim(-1, 6)
 profiler = cProfile.Profile()
 profiler.enable()
 SamplesSaved = []
-for i in range(1000): # Maybe there is a problem of overfitting
+for i in range(200): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
-    Iteration += 1
-    if Iteration >= 10:
-        CenterGeneratorList = MixtureSample + CrescentSample
+    if i > 10:
+        CenterGeneratorList = np.concatenate((CrescentSample,MixtureSample))
     CenterList = []
     # DistanceMixture = np.zeros([500,5])
     # DistanceTarget = np.zeros([500,5])
     for f in range(0,NumFs):
+        DistFlag = False # Test whether two centers are too close
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
+        while f > 0 and DistFlag == False:
+            if all([functions.distance(c,CenterList[k]) >= 4 for k in range(0,f)])== True: # If too close, generate another center until distance between centers > 2
+                DistFlag = True
+            else:
+                c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
+
         CenterList.append(c)
-        PotentialFs[f].setCenter(c)
-        PotentialFsVectorized[f].setCenter(c)
+        PotentialFsVectorized[f].setCenter(c) # Once a center is chosen, set it to the center of a RBF and its partial derivatives
+        PotentialGradVectorized[f].setCenter(c)
     OldBeta = Beta
     Beta = BetaNewton()
     OldD = DValue
     DValue = D()
-    print(DValue)
     MixtureSample = SamplesUpdate(MixtureSample)
-    if i == 249 or i == 499 or i == 749 or i == 999:
-        SamplesSaved.append(MixtureSample)
-    steps.append(MixtureSample)
 
     
-plt.subplot(2,3,2)
-plt.title("Flow Transport (250 iterations)")
-plt.scatter(*zip(*SamplesSaved[0]), color = 'g', alpha = 0.2)
-plt.xlim(-4, 4)
-plt.ylim(-1, 6)
-
-plt.subplot(2,3,3)
-plt.title("Flow Transport (500 iterations)")
-plt.scatter(*zip(*SamplesSaved[1]), color = 'g', alpha = 0.2)
-plt.xlim(-4, 4)
-plt.ylim(-1, 6)
-
-plt.subplot(2,3,4)
-plt.title("Flow Transport (750 iterations)")
-plt.scatter(*zip(*SamplesSaved[2]), color = 'g', alpha = 0.2)
-plt.xlim(-4, 4)
-plt.ylim(-1, 6)
-
-plt.subplot(2,3,5)
+plt.subplot(1,3,2)
 plt.title("Flow Transport (1000 iterations)")
-plt.scatter(*zip(*SamplesSaved[3]), color = 'g', alpha = 0.2)
+plt.scatter(*zip(*MixtureSample), color = 'g', alpha = 0.2)
 plt.xlim(-4, 4)
 plt.ylim(-1, 6)
 

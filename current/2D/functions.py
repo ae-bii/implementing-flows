@@ -185,5 +185,14 @@ class Gaussian_fgrad_Vectorized:
         self._center = center
     def __call__(self, z, wrt):
         r = DistanceVec(z, self._center)
-        return 2 * (self._alpha ** 2) * (self._center[wrt] - z[wrt]) * np.exp((-self._alpha ** 2) * (r ** 2))
-  
+        return z[:,wrt] * np.exp(-(self._alpha**2) * np.square(r))
+
+class InverseQuadratic_fgrad_Vectorized:
+    def __init__(self, constant=0, alpha=1):
+        self._constant = constant
+        self._alpha = alpha
+    def setCenter(self, center):
+        self._center = center
+    def __call__(self, z, wrt):
+        r = DistanceVec(z, self._center)
+        return z[:,wrt] * np.divide(1, ((self._alpha**2) * np.square(r) + 1))
