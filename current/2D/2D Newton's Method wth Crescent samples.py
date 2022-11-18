@@ -13,6 +13,7 @@ import functions
 import cProfile, pstats
 import time
 import SampleGenerator as sg
+import scipy.stats
 
 start = time.time()
 
@@ -29,7 +30,6 @@ def norm(i):
 
 def GradientApprox(VariableList):
     Gradient = []
-    delta = 1e-8
     for f in range(NumFs):
         GradientX = PotentialGradVectorized[f](VariableList,wrt=0)
         GradientY = PotentialGradVectorized[f](VariableList,wrt=1)
@@ -57,7 +57,7 @@ def BetaNewton(): # Newton's method (Experimental)
     HInverseNeg = (-1) * np.linalg.inv(HMat)
     Beta = np.dot(HInverseNeg, GVec)
     LearningRate = 0.5 # Not sure how to choose this value
-    ParameterList = [1, LearningRate/norm(Beta)]
+    ParameterList = [1, LearningRate/np.linalg.norm(Beta)]
     return Beta * min(ParameterList) # min(ParameterList) can be understood as similar to the "Proportion" in gradient descent
 
 def u(x):
@@ -145,12 +145,12 @@ PotentialFs = [functions.Giulio_F(alpha=1),
                 functions.InverseMultiquadric_F(alpha=1, constant=1)]
 
 PotentialFsVectorized = [
-                        functions.Gaussian_F_Vectorized(alpha=1.5, constant=0),
-                        functions.InverseQuadratic_F_Vectorized(alpha=1.5, constant=0)]
+                        functions.Gaussian_F_Vectorized(alpha=1, constant=0),
+                        functions.InverseQuadratic_F_Vectorized(alpha=1, constant=0)]
 
 PotentialGradVectorized = [
-                          functions.Gaussian_fgrad_Vectorized(alpha=1.5, constant=0),
-                          functions.InverseQuadratic_fgrad_Vectorized(alpha=1.5, constant=0)]
+                          functions.Gaussian_fgrad_Vectorized(alpha=1, constant=0),
+                          functions.InverseQuadratic_fgrad_Vectorized(alpha=1, constant=0)]
 
 NumFs = len(PotentialFsVectorized)
 
@@ -177,25 +177,31 @@ plt.ylim(-1, 6)
 profiler = cProfile.Profile()
 profiler.enable()
 SamplesSaved = []
-for i in range(200): # Maybe there is a problem of overfitting
+for i in range(2000): # Maybe there is a problem of overfitting
     #print("Iteration " + str(i))
     if i > 10:
         CenterGeneratorList = np.concatenate((CrescentSample,MixtureSample))
-    CenterList = []
+    CenterList = [0 for f in range(NumFs)]
     # DistanceMixture = np.zeros([500,5])
     # DistanceTarget = np.zeros([500,5])
     for f in range(0,NumFs):
         DistFlag = False # Test whether two centers are too close
         c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
+        CenterList[f] = c
         while f > 0 and DistFlag == False:
             if all([functions.distance(c,CenterList[k]) >= 4 for k in range(0,f)])== True: # If too close, generate another center until distance between centers > 2
                 DistFlag = True
             else:
                 c = CenterGeneratorList[random.randint(0, len(CenterGeneratorList) - 1)]
-
+                CenterList[f] = c
         CenterList.append(c)
         PotentialFsVectorized[f].setCenter(c) # Once a center is chosen, set it to the center of a RBF and its partial derivatives
         PotentialGradVectorized[f].setCenter(c)
+    
+    for f in range(0,NumFs):
+        AlphaF = (15/(len(CrescentSample) + len(MixtureSample))) * (2/(norm(CenterList[f]) ** 2))
+        PotentialFsVectorized[f].setAlpha(1)
+        PotentialGradVectorized[f].setAlpha(1)
     OldBeta = Beta
     Beta = BetaNewton()
     OldD = DValue
