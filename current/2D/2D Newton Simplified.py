@@ -13,13 +13,15 @@ random.seed(5)
 
 def radialBasisFunc(center, varList, bw):
     rList = np.linalg.norm(np.subtract(varList,center), axis=1)
+    print(bw)
     return 1/(bw * np.sqrt(2*np.pi)) * np.exp((-1/2) * np.square(np.divide((rList), bw)))
 
 def radialBasisGrad(center, varList, bw):
+    print(bw)
     diffVarCenter = np.subtract(varList,center)
     rList = np.linalg.norm(diffVarCenter, axis=1)   
-    mainBody = 1/(bw * np.sqrt(2*np.pi)) * np.exp((-1/2) * np.square(np.divide((rList), bw))) * np.divide(-rList, (bw ** 2))
-    return  np.c_[mainBody * diffVarCenter[:,0], mainBody * diffVarCenter[:,1]]
+    mainBody = 1/(bw * np.sqrt(2*np.pi)) * np.exp((-1/2) * np.square(np.divide((rList), bw)))
+    return  np.c_[mainBody * -diffVarCenter[:,0]/(bw ** 2), mainBody * -diffVarCenter[:,1]/(bw ** 2)]
 
 
 # def radialBasisGrad(center, varList, bw):
